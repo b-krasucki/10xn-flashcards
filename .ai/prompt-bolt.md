@@ -24,5 +24,3 @@ Dodatkowe wytyczne przed przystąpieniem do implementacji:
 - Przed wdrożeniem pełnej implementacji, proszę o przedstawienie planu i uzyskanie mojej akceptacji.
 
 Proszę wygenerować pełny plan prac wraz z wstępnym szkicem architektury systemu, a następnie oczekuj na moją akceptację przed rozpoczęciem implementacji końcowego PoC.
-
-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 open router
