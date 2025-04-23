@@ -1,0 +1,17 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Flashcard from "../components/Flashcard.tsx";
+---
+
+<Layout title="Flashcards">
+  <div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Flashcards</h1>
+    <div class="max-w-md mx-auto">
+      <Flashcard
+        client:load
+        question="Czym jest JSX w React?"
+        answer="JSX (JavaScript XML) to rozszerzenie składni JavaScriptu, które pozwala pisać kod przypominający HTML w plikach JavaScript. Ułatwia tworzenie i wizualizację struktury interfejsu użytkownika."
+      />
+    </div>
+  </div>
+</Layout>
