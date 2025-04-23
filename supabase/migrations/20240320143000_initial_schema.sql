@@ -15,7 +15,7 @@ create table if not exists flashcards (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
     generation_id bigint,
-    user_id uuid not null references auth.users(id)
+    user_id uuid not null references auth.users(id) on delete cascade
 );
 
 create table if not exists generations (
