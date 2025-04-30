@@ -1,29 +1,25 @@
 import type { APIRoute } from "astro";
 import { createGenerationSchema } from "../../lib/schemas/generation.schema";
 import { LLMService, LLMError } from "../../lib/services/llmService";
+import { DEFAULT_USER_ID } from "../../db/supabase.client";
+import type { SupabaseClient } from "../../db/supabase.client";
 import crypto from "crypto";
 
 export const prerender = false;
 
 /**
- * POST /generations - Initiates flashcard generation from source text
+ * POST /generations - Inicjuje generowanie fiszek z tekstu źródłowego
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Ensure user is authenticated
-    const { user } = locals;
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401 });
-    }
-
-    // Parse and validate request body
+    // Parsowanie i walidacja body żądania
     const body = await request.json();
     const validationResult = createGenerationSchema.safeParse(body);
 
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: "Validation failed",
+          error: "Błąd walidacji",
           details: validationResult.error.errors,
         }),
         { status: 400 }
@@ -33,31 +29,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { model, source_text } = validationResult.data;
     const start = Date.now();
 
-    // Calculate text metrics
-    const source_text_hash = crypto.createHash("sha256").update(source_text).digest("hex");
-    const source_text_length = source_text.length;
+    // Obliczanie metryki tekstu (używamy MD5)
+    const source_text_hash = crypto.createHash("md5").update(source_text).digest("hex");
+    const source_text_lenght = source_text.length;
 
-    // Generate flashcards using LLM
+    // Generowanie fiszek przy użyciu LLM
     const llmService = LLMService.getInstance();
     const proposals = await llmService.generateFlashcards(model, source_text);
     const generation_duration = Date.now() - start;
 
-    // Insert generation record
-    const { data: generation, error: dbError } = await locals.supabase
+    // Zapis rekordu generacji do bazy
+    const { data: generation, error: dbError } = await (locals.supabase as SupabaseClient)
       .from("generations")
       .insert({
-        user_id: user.id,
+        user_id: DEFAULT_USER_ID,
         model,
         generated_count: proposals.length,
         source_text_hash,
-        source_text_length,
+        source_text_lenght,
         generation_duration,
       })
       .select("id")
       .single();
 
     if (dbError || !generation) {
-      throw new Error("Failed to save generation record");
+      throw new Error("Nie udało się zapisać rekordu generacji");
     }
 
     return new Response(
@@ -74,19 +70,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     );
   } catch (error) {
-    console.error("Generation error:", error);
+    console.error("Błąd generacji:", error);
 
-    // Log error if it's an LLM error
+    // Logowanie błędu LLM
     if (error instanceof LLMError) {
-      await locals.supabase.from("generation_error_logs").insert({
-        user_id: locals.user?.id,
+      await (locals.supabase as SupabaseClient).from("generation_error_logs").insert({
+        user_id: DEFAULT_USER_ID,
+        model: "unknown",
+        source_text_hash: "",
+        source_text_lenght: 0,
         error_code: error.code,
         error_message: error.message,
       });
 
-      return new Response(JSON.stringify({ error: "LLM service error" }), { status: 500 });
+      return new Response(JSON.stringify({ error: "Błąd serwisu LLM" }), { status: 500 });
     }
 
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Błąd wewnętrzny serwera" }), { status: 500 });
   }
 };

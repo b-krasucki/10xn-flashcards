@@ -16,6 +16,7 @@ export class LLMService {
 
   private constructor() {
     const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    console.log("OpenRouter API Key:", apiKey ? "Key exists" : "Key is missing");
     if (!apiKey) {
       throw new Error("OPENROUTER_API_KEY environment variable is not set");
     }
@@ -38,6 +39,7 @@ export class LLMService {
    */
   public async generateFlashcards(model: string, sourceText: string): Promise<GenerationProposalDto[]> {
     try {
+      console.log("Making request to OpenRouter with model:", model);
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -54,29 +56,58 @@ export class LLMService {
             },
             {
               role: "user",
-              content: `Create flashcards from the following text:\n\n${sourceText}`,
+              content: `You are a helpful assistant that creates flashcards from text. Generate concise, clear flashcards with questions on the front and answers on the back. Response should be in language of the source text:\n\n${sourceText}`,
             },
           ],
         }),
       });
 
       if (!response.ok) {
-        throw new LLMError(`API request failed with status ${response.status}`, "API_ERROR");
+        const errorText = await response.text();
+        console.error("OpenRouter API error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+        });
+        throw new LLMError(`API request failed with status ${response.status}: ${errorText}`, "API_ERROR");
       }
 
       const data = await response.json();
+      console.log("OpenRouter response:", data);
+
+      // Log the raw content from LLM for debugging parsing
+      const rawContent = data.choices[0]?.message?.content;
+      console.log("Raw LLM Content:\n---", rawContent, "\n---");
 
       // Transform the LLM response into flashcard proposals
-      // This is a simplified example - you'd need to parse the actual response format
-      return data.choices[0].message.content
-        .split("\n")
-        .filter(Boolean)
-        .map((card: string) => ({
-          front: card.split(" | ")[0],
-          back: card.split(" | ")[1],
-          source: "ai-full" as const,
-        }));
+      return rawContent
+        ?.split("\n\n") // Split into blocks based on double newline
+        .map((block: string) => {
+          const lines = block.trim().split("\n");
+          let front = "";
+          let back = "";
+
+          lines.forEach((line) => {
+            if (line.startsWith("Front:")) {
+              front = line.substring("Front:".length).trim();
+            } else if (line.startsWith("Back:")) {
+              back = line.substring("Back:".length).trim();
+            }
+          });
+
+          if (front && back) {
+            // Only return if both front and back are found
+            return {
+              front,
+              back,
+              source: "ai-full" as const,
+            };
+          }
+          return null; // Return null for invalid blocks
+        })
+        .filter((proposal: GenerationProposalDto | null): proposal is GenerationProposalDto => proposal !== null); // Filter out nulls and type guard // Return empty array if content is missing or no valid blocks found
     } catch (error) {
+      console.error("LLM Service error:", error);
       if (error instanceof LLMError) {
         throw error;
       }
