@@ -1,7 +1,9 @@
 # 10xn-flashcards
+
 A flashcards application that helps users quickly create, manage, and learn from flashcard sets. The application leverages advanced LLM APIs to generate flashcard suggestions based on provided text, while also allowing manual creation and editing. It supports user authentication, spaced repetition study sessions, and performance tracking.
 
 ## Table of Contents
+
 - [Project Description](#project-description)
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
@@ -11,6 +13,7 @@ A flashcards application that helps users quickly create, manage, and learn from
 - [License](#license)
 
 ## Project Description
+
 10xn-flashcards is designed to simplify the process of creating high-quality educational flashcards. With a combination of AI-powered flashcard generation and manual editing, users can quickly transform their study material into effective learning tools. Key features include:
 
 - Automatic flashcard generation using LLM integration.
@@ -20,7 +23,9 @@ A flashcards application that helps users quickly create, manage, and learn from
 - Collection and analysis of flashcard generation statistics.
 
 ## Tech Stack
+
 **Frontend:**
+
 - Astro 5
 - React 19
 - TypeScript 5
@@ -28,16 +33,20 @@ A flashcards application that helps users quickly create, manage, and learn from
 - Shadcn/ui
 
 **Backend:**
+
 - Supabase (PostgreSQL, authentication, and more)
 
 **AI Integration:**
+
 - Openrouter.ai for interfacing with multiple language models (e.g., OpenAI, Anthropic, Google)
 
 **CI/CD & Hosting:**
+
 - GitHub Actions for pipeline automation
 - DigitalOcean for Docker-based hosting
 
 ## Getting Started Locally
+
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
@@ -67,6 +76,7 @@ A flashcards application that helps users quickly create, manage, and learn from
      ```
 
 ## Available Scripts
+
 The following scripts are available in the project (as defined in `package.json`):
 
 - **`npm run dev`**: Starts the development server.
@@ -78,6 +88,7 @@ The following scripts are available in the project (as defined in `package.json`
 - **`npm run format`**: Formats code using Prettier.
 
 ## Project Scope
+
 The scope of 10x-cards includes:
 
 - **Automatic Flashcard Generation:** Using LLM, the application generates flashcard suggestions from user-provided text.
@@ -86,10 +97,12 @@ The scope of 10x-cards includes:
 - **Spaced Repetition:** Integration with spaced repetition algorithms to facilitate effective learning sessions.
 - **Usage Statistics:** Tracking the efficiency of flashcard generation and user acceptance.
 
-*Note:* Advanced features such as a custom spaced repetition algorithm, gamification, multi-document import, public API, or mobile application support are not included in this MVP.
+_Note:_ Advanced features such as a custom spaced repetition algorithm, gamification, multi-document import, public API, or mobile application support are not included in this MVP.
 
 ## Project Status
+
 This project is currently in the MVP stage. Features are actively being developed and refined based on user feedback.
 
 ## License
+
 This project is licensed under the MIT License.

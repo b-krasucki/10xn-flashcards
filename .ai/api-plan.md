@@ -12,8 +12,9 @@
 ### Flashcards
 
 - **GET /flashcards**
+
   - **Description**: Retrieve a paginated list of flashcards for the authenticated user.
-  - **Query Parameters**: 
+  - **Query Parameters**:
     - `page`: Page number for pagination
     - `limit`: Number of flashcards per page
     - `source`: Filter by flashcard source (`ai-full`, `ai-edited`, `manual`)
@@ -22,6 +23,7 @@
   - **Status Codes**: 200 OK, 401 Unauthorized, 500 Internal Server Error
 
 - **POST /flashcards**
+
   - **Description**: Create one or multiple flashcards proposals (supports manual creation and AI-generated flashcards).
   - **Request Payload**:
     ```json
@@ -37,13 +39,13 @@
     }
     ```
   - **Validations**:
+
     - Front side must not be empty and cannot exceed 200 characters
     - Back side must not be empty and cannot exceed 500 characters
     - Source must be one of: "manual", "ai-full", "ai-edited"
     - If source is "ai-full" or "ai-edited", generation_id must reference a valid generation
     - If source is "manual", generation_id must be null
     - User can only create flashcards for themselves
-
 
   - **Response**: JSON array of created flashcards, each including its id and timestamps.
     ```json
@@ -61,7 +63,7 @@
       ]
     }
     ```
-  - **Status Codes**: 
+  - **Status Codes**:
     - 201 Created: Flashcards successfully created
     - 400 Bad Request: Validation errors (invalid length, missing required fields)
     - 401 Unauthorized: User not authenticated
@@ -69,9 +71,8 @@
     - 404 Not Found: Referenced generation_id doesn't exist
     - 500 Internal Server Error: Server-side error
 
-  
-
 - **GET /flashcards/{id}**
+
   - **Description**: Retrieve details of a specific flashcard by its ID.
   - **Response**: JSON flashcard object.
   - **Status Codes**: 200 OK, 401 Unauthorized, 404 Not Found
@@ -83,13 +84,14 @@
     {
       "front": "string",
       "back": "string",
-      "source": "ai-edited" 
+      "source": "ai-edited"
     }
     ```
 - **Validations**:
-    - Front side must not be empty and cannot exceed 200 characters
-    - Back side must not be empty and cannot exceed 500 characters
-    - Source must be one of: 'ai-edited' or 'manual'
+
+  - Front side must not be empty and cannot exceed 200 characters
+  - Back side must not be empty and cannot exceed 500 characters
+  - Source must be one of: 'ai-edited' or 'manual'
 
   - **Response**: JSON object of the updated flashcard.
   - **Status Codes**: 200 OK, 400 Bad Request, 401 Unauthorized, 404 Not Found
@@ -102,12 +104,13 @@
 ### Generations
 
 - **POST /generations**
+
   - **Description**: Initiate flashcard proposals generation via AI. Validates that the input text meets the length requirements (1000 to 10000 characters) and calls the external LLM API (e.g., through Openrouter.ai).
   - **Request Payload**:
     ```json
     {
-      "model": "string",  // e.g., 'gpt-4'
-      "source_text": "string"  // Input text for generating flashcards
+      "model": "string", // e.g., 'gpt-4'
+      "source_text": "string" // Input text for generating flashcards
     }
     ```
   - **Response**:
@@ -124,6 +127,7 @@
   - **Status Codes**: 201 Created, 400 Bad Request (if text length is invalid), 500 Internal Server Error
 
 - **GET /generations/{id}**
+
   - **Description**: Retrieve details of a specific generation request along with its proposed flashcards.
   - **Response**: JSON object containing generation details and the associated flashcard proposals.
   - **Status Codes**: 200 OK, 401 Unauthorized, 404 Not Found
@@ -138,7 +142,7 @@
 
 - **GET /generation-error-logs**
   - **Description**: Retrieve error logs for AI generation requests.
-  - **Query Parameters**: 
+  - **Query Parameters**:
     - `page`, `limit` for pagination
     - `error_code` for filtering
   - **Response**: JSON array of error log objects.
@@ -153,18 +157,19 @@
 ## 4. Validation and Business Logic
 
 - **Input Validation**:
+
   - For the `/generations` endpoint, the `source_text` must have a length between 1000 and 10000 characters as per the DB schema check constraints.
   - For flashcards, the `source` field is restricted to the values: `ai-full`, `ai-edited`, or `manual`.
 
 - **Business Logic**:
+
   - **AI Flashcard Generation**: When a POST request is made to `/generations`, the API calls an external LLM API (e.g., Openrouter.ai) to generate flashcard proposals. The generation process records statistics (generated count, generation duration, etc.) and creates associated flashcard proposals.
   - 'source_text_hash' - Computed for duplicate detection
 
   - **Flashcard Approval and Editing**: Users review generated flashcards and can choose to accept, edit, or reject individual proposals. Accepted flashcards are then stored in the `flashcards` table with appropriate source tagging.
   - 'front' - Maximum lenght of 200 characters
   - 'back' - Maximum lenght of 500 characters
-  
-  
+
 - **Error Handling and Logging**:
   - The API returns appropriate HTTP status codes (e.g., 400 for validation errors, 401 for unauthorized access, 404 for not found, and 500 for internal errors).
   - Detailed error messages are provided to clients in the response.

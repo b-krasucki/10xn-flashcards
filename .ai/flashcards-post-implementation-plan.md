@@ -1,9 +1,11 @@
 # API Endpoint Implementation Plan: POST /flashcards
 
 ## 1. Przegląd punktu końcowego
+
 Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI). Umożliwia użytkownikowi dodanie własnych fiszek lub zaakceptowanie/edycję wygenerowanych automatycznie.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: POST
 - Ścieżka: `/api/flashcards`
 - Nagłówki:
@@ -31,6 +33,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
   - uwierzytelniona sesja Supabase; operacja tylko dla bieżącego `user_id`
 
 ## 3. Szczegóły odpowiedzi
+
 - Status: **201 Created**
 - Body (JSON):
   ```json
@@ -56,6 +59,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
   - 500 Internal Server Error – nieoczekiwany błąd
 
 ## 4. Przepływ danych
+
 1. **Middleware** (src/middleware/index.ts) doda `supabase` do `context.locals`
 2. **Route Handler** (src/pages/api/flashcards/index.ts):
    - Parsuje i waliduje JSON via Zod
@@ -69,6 +73,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
 4. **Odpowiedź**: zwraca JSON z propozycjami i status 201
 
 ## 5. Względy bezpieczeństwa
+
 - Uwierzytelnianie: Supabase Auth (cookie lub header)
 - Autoryzacja: `user_id` z sesji musi zgadzać się z `user_id` wpisu
 - Unikanie SQL injection przez Supabase client
@@ -76,21 +81,24 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
 - Ograniczenie wielkości wsadu: max np. 50 fiszek na żądanie
 
 ## 6. Obsługa błędów
-| Scenariusz                     | Kod  | Akcja                                                       |
-|--------------------------------|------|-------------------------------------------------------------|
-| Błędna walidacja               | 400  | Zwróć szczegóły błędów Zod                                 |
-| Brak sesji                     | 401  | Zwróć `{ error: 'Unauthorized' }`                          |
-| Inny `user_id` w DTO           | 403  | Zwróć `{ error: 'Forbidden' }`                              |
-| Nieistniejące `generation_id`  | 404  | Zwróć `{ error: 'Generation not found' }`                  |
-| Błąd bazy danych / wyjątek     | 500  | Log error, zwróć `{ error: 'Internal Server Error' }`      |
+
+| Scenariusz                    | Kod | Akcja                                                 |
+| ----------------------------- | --- | ----------------------------------------------------- |
+| Błędna walidacja              | 400 | Zwróć szczegóły błędów Zod                            |
+| Brak sesji                    | 401 | Zwróć `{ error: 'Unauthorized' }`                     |
+| Inny `user_id` w DTO          | 403 | Zwróć `{ error: 'Forbidden' }`                        |
+| Nieistniejące `generation_id` | 404 | Zwróć `{ error: 'Generation not found' }`             |
+| Błąd bazy danych / wyjątek    | 500 | Log error, zwróć `{ error: 'Internal Server Error' }` |
 
 ## 7. Wydajność
+
 - Batch insert zamiast wielu pojedynczych zapytań
 - Opcjonalnie użycie RPC lub transakcji dla zachowania atomiczności
 - Ograniczenie rozmiaru payloadu i liczby elementów na żądanie
 - Indeks na `user_id` i `generation_id` w tabeli `flashcards`
 
 ## 8. Kroki implementacji
+
 1. Utworzyć lub zaktualizować Zod schema w `src/lib/schemas/flashcards.schema.ts`
 2. Dodać plik API route w `src/pages/api/flashcards/index.ts`
 3. W middleware (`src/middleware/index.ts`) zapewnić dostęp do `supabase` i `session`

@@ -3,6 +3,7 @@
 ## 1. Lista tabel
 
 ### Tabela: users
+
 Tabela zarządzana przez Supabase Auth
 
 - id: UUID PRIMARY KEY
@@ -12,6 +13,7 @@ Tabela zarządzana przez Supabase Auth
 - confirmed_at: TIMESTAMPTZ
 
 ### Tabela: flashcards
+
 - id: BIGSERIAL PRIMARY KEY
 - front: VARCHAR(200) NOT NULL
 - back: VARCHAR(500) NOT NULL
@@ -22,6 +24,7 @@ Tabela zarządzana przez Supabase Auth
 - user_id: UUID NOT NULL REFERENCES users(id)
 
 ### Tabela: generations
+
 - id: BIGSERIAL PRIMARY KEY
 - user_id: UUID NOT NULL REFERENCES users(id)
 - model: VARCHAR NOT NULL
@@ -35,6 +38,7 @@ Tabela zarządzana przez Supabase Auth
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 
 ### Tabela: generation_error_logs
+
 - id: BIGSERIAL PRIMARY KEY
 - user_id: UUID NOT NULL REFERENCES users(id)
 - model: VARCHAR NOT NULL
@@ -44,14 +48,12 @@ Tabela zarządzana przez Supabase Auth
 - error_message: TEXT NOT NULL
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 
-
 ## 2. Relacje między tabelami
 
 - Jeden uzytkownik (users) ma wiele fiszek (flashcards).
 - Jeden uzytkownik (users) ma wiele rekordow w tabeli generations.
 - Jeden uzytkownik (users) ma wiele rekordow w tabeli generation_error_logs.
 - Kazda fiszka (flashcards) moze opcjonalnie odnosic sie do jednej generacji (generations) poprzez generation_id
-
 
 ## 3. Indeksy
 
@@ -60,18 +62,17 @@ Tabela zarządzana przez Supabase Auth
 - Indeks na kolumnie 'user_id' w tabeli generations
 - Indeks na kolumnie 'user_id' w tabeli generation_error_logs
 
-
 ## 4. Zasady PostgreSQL (RLS i triggery)
 
 ### Row-Level Security (RLS)
+
 Dla tabel: flashcards, generations, generation_error_logs nalezy wdrozyc poltyki RLS, ktore pozwalaja uzytkownikowi na dostep tylko do rekordow, gdzie 'user_id' odpowiada identyfikatorowi uzytkownika z Supabase Auth (np. auth.uid() = user_id).
 
-
-*Uwaga: Funkcja `auth.uid()` pochodzi z Supabase Auth i umożliwia identyfikację bieżącego użytkownika.*
+_Uwaga: Funkcja `auth.uid()` pochodzi z Supabase Auth i umożliwia identyfikację bieżącego użytkownika._
 
 ### Triggery automatycznie aktualizujące `updated_at`
-Triggery należy utworzyć dla tabel generations oraz flashcards.
 
+Triggery należy utworzyć dla tabel generations oraz flashcards.
 
 ## 5. Dodatkowe uwagi
 
