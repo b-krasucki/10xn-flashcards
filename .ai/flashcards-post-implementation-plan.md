@@ -26,7 +26,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
   - `front`: non-empty, max 200 znaków
   - `back`: non-empty, max 500 znaków
   - `source`: enum(`manual`,`ai-full`,`ai-edited`)
-  - jeśli `source` ≠ `manual` ⇒ `generation_id` musi być liczbą i istniał w tabeli `generations`
+  - jeśli `source` ≠ `manual` ⇒ `generation_id` musi być liczbą i istniec w tabeli `generations`
   - jeśli `source` = `manual` ⇒ `generation_id` musi być `null`
   - uwierzytelniona sesja Supabase; operacja tylko dla bieżącego `user_id`
 
@@ -95,10 +95,4 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
 2. Dodać plik API route w `src/pages/api/flashcards/index.ts`
 3. W middleware (`src/middleware/index.ts`) zapewnić dostęp do `supabase` i `session`
 4. Stworzyć `flashcardsService` w `src/lib/services/flashcards.service.ts` z metodą `createFlashcards`
-5. Napisać testy jednostkowe/względnie integracyjne dla:
-   - walidacji Zod
-   - logiki sprawdzania `generation_id`
-   - batch insert i mapowania DTO
-6. Dodać testy e2e korzystające z Supabase test database lub mocka
-7. Zaktualizować dokumentację API (OpenAPI / postman)
-8. Code review i deployment 
+5. Zaktualizować dokumentację API (OpenAPI / postman)
