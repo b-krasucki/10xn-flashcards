@@ -1,0 +1,29 @@
+---
+import MainLayout from "../layouts/Layout.astro";
+import { GenerateForm } from "../components/GenerateForm";
+
+// Ensure page requires authentication
+export const prerender = false;
+
+// Get user from middleware
+const { user } = Astro.locals;
+
+// Redirect if not authenticated
+if (!user) {
+  return Astro.redirect("/login");
+}
+---
+
+<MainLayout title="Generate Flashcards">
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">Generate Flashcards</h1>
+          <p class="text-muted-foreground">Create AI-generated flashcards from your study materials</p>
+        </div>
+      </div>
+      <GenerateForm client:load />
+    </div>
+  </div>
+</MainLayout>
