@@ -2,9 +2,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 
 const MODEL_OPTIONS = [
-  { value: "claude-3-haiku-20240307", label: "Claude 3 Haiku" },
-  { value: "claude-3-sonnet-20240229", label: "Claude 3 Sonnet" },
-  { value: "claude-3-opus-20240229", label: "Claude 3 Opus" },
+  { value: "google/gemini-2.5-flash-preview", label: "Gemini 2.5 Flash - Preview" },
+  { value: "openai/gpt-4.1-mini", label: "GPT-4.1 Mini" },
+  { value: "x-ai/grok-3-mini-beta", label: "Grok 3 Mini Beta" },
+  { value: "qwen/qwen3-30b-a3b", label: "Qwen3 30B A3B" },
 ];
 
 interface ModelSelectProps {
@@ -15,7 +16,7 @@ interface ModelSelectProps {
 export const ModelSelect = ({ value, onChange }: ModelSelectProps) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor="model-select">Model</Label>
+      <Label htmlFor="model-select">Choose a model</Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger id="model-select" className="w-full">
           <SelectValue placeholder="Select an AI model" />
