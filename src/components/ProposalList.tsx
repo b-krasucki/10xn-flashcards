@@ -63,6 +63,27 @@ export const ProposalList = ({ proposals: initialProposals }: ProposalListProps)
     // TODO: Call onReject callback prop here
   };
 
+  const handleRejectAllClick = () => {
+    setProposals([]);
+    setEditingIndex(null);
+    setApprovedIndices(new Set());
+    setRejectedIndices(new Set());
+    // TODO: Call onRejectAll callback prop here
+  };
+
+  const handleSaveAllClick = () => {
+    // TODO: Implement logic to save all *current* proposals
+    // This would likely involve calling a prop function passed from the parent
+    // with the current `proposals` state.
+    console.log("Saving all proposals:", proposals);
+  };
+
+  const handleSaveApprovedClick = () => {
+    // TODO: Implement logic to save only approved proposals
+    const approvedProposals = proposals.filter((_, index) => approvedIndices.has(index));
+    console.log("Saving approved proposals:", approvedProposals);
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Generated Flashcards</h2>
@@ -115,9 +136,12 @@ export const ProposalList = ({ proposals: initialProposals }: ProposalListProps)
                 ) : (
                   <>
                     {/* Edit button is never disabled by approve/reject status anymore */}
-                    <Button variant="outline" size="sm" onClick={() => handleEditClick(index)}>
-                      Edit
-                    </Button>
+                    {/* Hide Edit button if rejected */}
+                    {!isRejected && (
+                      <Button variant="outline" size="sm" onClick={() => handleEditClick(index)}>
+                        Edit
+                      </Button>
+                    )}
                     {/* Reject button disabled only if currently rejected */}
                     <Button
                       variant="destructive"
@@ -146,8 +170,16 @@ export const ProposalList = ({ proposals: initialProposals }: ProposalListProps)
 
       {/* Add Save and Reject All buttons */}
       <div className="flex justify-end space-x-4 pt-6">
-        <Button variant="destructive">Reject All Flashcards</Button>
-        <Button className="bg-emerald-200 hover:bg-emerald-300 text-emerald-900">Save Approved Flashcards</Button>
+        <Button variant="destructive" onClick={handleRejectAllClick}>
+          Reject All Flashcards
+        </Button>
+        <Button
+          className="bg-emerald-100 hover:bg-emerald-300 text-emerald-900 disabled:bg-emerald-900 disabled:text-emerald-100"
+          onClick={handleSaveApprovedClick}
+        >
+          Save Approved Flashcards
+        </Button>
+        <Button onClick={handleSaveAllClick}>Save All</Button>
       </div>
     </div>
   );

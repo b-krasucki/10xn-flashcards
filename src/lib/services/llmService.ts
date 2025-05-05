@@ -56,7 +56,7 @@ export class LLMService {
             },
             {
               role: "user",
-              content: `You are a helpful assistant that creates flashcards from text. Generate concise, clear flashcards with questions on the front and answers on the back. Response should be in language of the source text:\n\n${sourceText}`,
+              content: `You are a helpful assistant that creates flashcards from text. Generate concise, clear flashcards with questions on the front and answers on the back. Response should be in language of the source text in format "Front: question" and "Back: answer" for each flashcard. No other text should be included. \n\n${sourceText}`,
             },
           ],
         }),

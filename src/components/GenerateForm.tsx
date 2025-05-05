@@ -29,7 +29,7 @@ interface GenerateViewState {
 const useGenerationForm = () => {
   const [state, setState] = useState<GenerateViewState>({
     sourceText: "",
-    model: "gpt-4", // Default model
+    model: "google/gemini-2.5-flash-preview", // Default model
     isLoading: false,
     error: null,
     proposals: null,
