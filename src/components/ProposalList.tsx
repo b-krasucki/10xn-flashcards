@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { GenerationProposalDto } from "../types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,15 +18,17 @@ import {
 
 interface ProposalListProps {
   proposals: readonly GenerationProposalDto[];
-  generationId?: number | null;
+  sourceText?: string;
+  deckName: string;
   onSave?: (proposalsToSave: GenerationProposalDto[], deckName: string) => void;
   onDeckNameChange?: (newName: string) => void;
-  onRegenerateDeckName?: () => Promise<string | null>;
+  onRegenerateDeckName?: (sourceText: string) => Promise<string | null>;
 }
 
 export const ProposalList = ({
   proposals: initialProposals,
-  generationId,
+  sourceText,
+  deckName: initialDeckName,
   onSave,
   onDeckNameChange,
   onRegenerateDeckName,
@@ -39,10 +41,14 @@ export const ProposalList = ({
   const [rejectedIndices, setRejectedIndices] = useState<Set<number>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [unmarkedIndices, setUnmarkedIndices] = useState<number[]>([]);
-  const [deckName, setDeckName] = useState<string>(`Generated Deck ${generationId ?? ""}`.trim());
+  const [deckName, setDeckName] = useState<string>(initialDeckName);
   const [isEditingDeckName, setIsEditingDeckName] = useState<boolean>(false);
   const [tempDeckName, setTempDeckName] = useState<string>("");
   const [isRegeneratingName, setIsRegeneratingName] = useState<boolean>(false);
+
+  useEffect(() => {
+    setDeckName(initialDeckName);
+  }, [initialDeckName]);
 
   if (!proposals?.length && !initialProposals?.length) return null;
 
@@ -174,25 +180,24 @@ export const ProposalList = ({
   };
 
   const handleRegenerateDeckNameClick = async () => {
+    if (!sourceText) {
+      console.warn("Cannot regenerate deck name without sourceText.");
+      return;
+    }
+
     if (!onRegenerateDeckName) {
       console.warn("onRegenerateDeckName prop not provided.");
-      // Simulate regeneration locally as fallback
-      setIsRegeneratingName(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-      const randomSuffix = Math.random().toString(36).substring(7);
-      const newName = `Regenerated Deck ${randomSuffix}`;
-      setDeckName(newName);
-      onDeckNameChange?.(newName);
-      setIsRegeneratingName(false);
       return;
     }
 
     setIsRegeneratingName(true);
     try {
-      const newName = await onRegenerateDeckName();
+      const newName = await onRegenerateDeckName(sourceText);
       if (newName) {
         setDeckName(newName);
         onDeckNameChange?.(newName);
+      } else {
+        console.warn("Regeneration returned null/empty name.");
       }
     } catch (error) {
       console.error("Failed to regenerate deck name:", error);
@@ -206,40 +211,48 @@ export const ProposalList = ({
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Generated Flashcards</h2>
 
-      <div className="space-y-2">
-        <Label htmlFor="deck-name">Deck Name</Label>
-        <div className="flex items-center space-x-2">
-          {isEditingDeckName ? (
-            <>
-              <Input
-                id="deck-name"
-                value={tempDeckName}
-                onChange={handleDeckNameChange}
-                placeholder="Enter a name for this flashcard deck"
-                className="flex-grow"
-              />
-              <Button variant="outline" size="sm" onClick={handleCancelDeckNameClick}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSaveDeckNameClick}>
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              <span id="deck-name" className="flex-grow font-medium mr-2">
-                {deckName}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleEditDeckNameClick} disabled={isRegeneratingName}>
-                Edit
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleRegenerateDeckNameClick} disabled={isRegeneratingName}>
-                {isRegeneratingName ? <Loader2 className="h-4 w-4 animate-spin" /> : "Regenerate"}
-              </Button>
-            </>
-          )}
+      {/* Conditionally render Deck Name section only if there are proposals */}
+      {proposals.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="deck-name">Deck Name</Label>
+          <div className="flex items-center space-x-2">
+            {isEditingDeckName ? (
+              <>
+                <Input
+                  id="deck-name"
+                  value={tempDeckName}
+                  onChange={handleDeckNameChange}
+                  placeholder="Enter a name for this flashcard deck"
+                  className="flex-grow"
+                />
+                <Button variant="outline" size="sm" onClick={handleCancelDeckNameClick}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSaveDeckNameClick}>
+                  Save
+                </Button>
+              </>
+            ) : (
+              <>
+                <span id="deck-name" className="flex-grow font-medium mr-2">
+                  {deckName}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleEditDeckNameClick} disabled={isRegeneratingName}>
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerateDeckNameClick}
+                  disabled={isRegeneratingName || !onRegenerateDeckName}
+                >
+                  {isRegeneratingName ? <Loader2 className="h-4 w-4 animate-spin" /> : "Regenerate"}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {proposals.length === 0 ? (
         <p className="text-muted-foreground">No flashcard proposals available.</p>

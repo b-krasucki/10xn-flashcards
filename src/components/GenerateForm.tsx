@@ -24,6 +24,8 @@ interface GenerateViewState {
   error: string | null;
   proposals: GenerationProposalDto[] | null;
   generationId: number | null;
+  deckName: string | null;
+  isRegeneratingName: boolean;
 }
 
 const useGenerationForm = () => {
@@ -34,6 +36,8 @@ const useGenerationForm = () => {
     error: null,
     proposals: null,
     generationId: null,
+    deckName: null,
+    isRegeneratingName: false,
   });
 
   const charCount = state.sourceText.length;
@@ -82,11 +86,12 @@ const useGenerationForm = () => {
         throw new Error(errorData.error || "Failed to generate flashcards");
       }
 
-      const data = (await response.json()) as CreateGenerationResponseDto;
+      const data = (await response.json()) as CreateGenerationResponseDto & { deckName?: string };
       setState((prev) => ({
         ...prev,
         proposals: data.proposals,
         generationId: data.generation_id,
+        deckName: data.deckName ?? `Generated Deck ${data.generation_id ?? ""}`.trim(),
         isLoading: false,
       }));
     } catch (error: unknown) {
@@ -98,6 +103,46 @@ const useGenerationForm = () => {
     }
   };
 
+  const handleRegenerateDeckName = async (text: string): Promise<string | null> => {
+    if (!text) {
+      console.warn("No source text provided for name regeneration.");
+      return null;
+    }
+    setState((prev) => ({ ...prev, isRegeneratingName: true, error: null }));
+    try {
+      const response = await fetch("/api/generateDeckName", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sourceText: text, model: state.model }),
+      });
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as ErrorResponseDto;
+        throw new Error(errorData.error || "Failed to regenerate deck name");
+      }
+
+      const data = (await response.json()) as { deckName: string };
+      setState((prev) => ({ ...prev, deckName: data.deckName, isRegeneratingName: false }));
+      return data.deckName;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred during name regeneration";
+      setState((prev) => ({
+        ...prev,
+        error: errorMessage,
+        isRegeneratingName: false,
+      }));
+      return null;
+    }
+  };
+
+  // Function to handle manual deck name changes from ProposalList
+  const handleDeckNameChange = (newName: string) => {
+    setState((prev) => ({ ...prev, deckName: newName }));
+  };
+
   return {
     state,
     charCount,
@@ -105,12 +150,22 @@ const useGenerationForm = () => {
     handleTextChange,
     handleModelChange,
     handleGenerateClick,
+    handleRegenerateDeckName,
+    handleDeckNameChange,
   };
 };
 
 export const GenerateForm = () => {
-  const { state, charCount, isValidLength, handleTextChange, handleModelChange, handleGenerateClick } =
-    useGenerationForm();
+  const {
+    state,
+    charCount,
+    isValidLength,
+    handleTextChange,
+    handleModelChange,
+    handleGenerateClick,
+    handleRegenerateDeckName,
+    handleDeckNameChange,
+  } = useGenerationForm();
 
   return (
     <div className="space-y-8">
@@ -136,8 +191,16 @@ export const GenerateForm = () => {
       </Card>
 
       <ErrorMessage message={state.error} />
-      {state.proposals && <ProposalList proposals={state.proposals} />}
-      <OverlayLoader isVisible={state.isLoading} />
+      {state.proposals && state.deckName !== null && (
+        <ProposalList
+          proposals={state.proposals}
+          deckName={state.deckName}
+          sourceText={state.sourceText}
+          onRegenerateDeckName={handleRegenerateDeckName}
+          onDeckNameChange={handleDeckNameChange}
+        />
+      )}
+      <OverlayLoader isVisible={state.isLoading || state.isRegeneratingName} />
     </div>
   );
 };

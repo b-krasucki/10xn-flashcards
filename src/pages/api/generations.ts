@@ -36,6 +36,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Generowanie fiszek przy użyciu LLM
     const llmService = LLMService.getInstance();
     const proposals = await llmService.generateFlashcards(model, source_text);
+
+    // Generowanie nazwy talii
+    // Używamy tego samego modelu i tekstu źródłowego
+    // Obsługa błędów generowania nazwy jest tutaj uproszczona dla przykładu
+    // Można dodać bardziej szczegółową obsługę błędów, jeśli jest to wymagane
+    let deckName = `Generated Deck for ${source_text_hash.substring(0, 8)}`; // Fallback name
+    try {
+      deckName = await llmService.generateDeckName(model, source_text);
+    } catch (nameGenError) {
+      console.error("Failed to generate deck name, using fallback:", nameGenError);
+      // Opcjonalnie zaloguj ten błąd osobno
+    }
+
     const generation_duration = Date.now() - start;
 
     // Zapis rekordu generacji do bazy
@@ -61,6 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         generation_id: generation.id,
         generated_count: proposals.length,
         proposals,
+        deckName,
       }),
       {
         status: 201,
