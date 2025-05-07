@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { GenerationProposalDto } from "../types";
+import type { GenerationProposalItemDto } from "../types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface ProposalListProps {
-  proposals: readonly GenerationProposalDto[];
+  proposals: readonly GenerationProposalItemDto[];
   sourceText?: string;
   deckName: string;
-  onSave?: (proposalsToSave: GenerationProposalDto[], deckName: string) => void;
+  onSave?: (proposalsToSave: GenerationProposalItemDto[], deckName: string) => void;
   onDeckNameChange?: (newName: string) => void;
   onRegenerateDeckName?: (sourceText: string) => Promise<string | null>;
 }
@@ -257,8 +257,8 @@ export const ProposalList = ({
       {proposals.length === 0 ? (
         <p className="text-muted-foreground">No flashcard proposals available.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {proposals.map((proposal: GenerationProposalDto, index: number) => {
+        <div className="grid gap-4 sm:grid-cols-3">
+          {proposals.map((proposal: GenerationProposalItemDto, index: number) => {
             const isEditing = editingIndex === index;
             const isApproved = approvedIndices.has(index);
             const isRejected = rejectedIndices.has(index);

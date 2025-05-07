@@ -6,7 +6,7 @@ import type {
   CreateGenerationCommandDto,
   CreateGenerationResponseDto,
   ErrorResponseDto,
-  GenerationProposalDto,
+  GenerationProposalItemDto,
 } from "../types";
 import { SourceTextInput } from "./SourceTextInput";
 import { CharCounter } from "./CharCounter";
@@ -22,7 +22,7 @@ interface GenerateViewState {
   model: string;
   isLoading: boolean;
   error: string | null;
-  proposals: GenerationProposalDto[] | null;
+  proposals: GenerationProposalItemDto[] | null;
   generationId: number | null;
   deckName: string | null;
   isRegeneratingName: boolean;

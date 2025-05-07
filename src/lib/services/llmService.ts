@@ -1,4 +1,4 @@
-import type { GenerationProposalDto } from "../../types";
+import type { GenerationProposalItemDto } from "../../types";
 
 export class LLMError extends Error {
   constructor(
@@ -37,7 +37,7 @@ export class LLMService {
    * @returns Array of generated flashcard proposals
    * @throws LLMError if the API call fails
    */
-  public async generateFlashcards(model: string, sourceText: string): Promise<GenerationProposalDto[]> {
+  public async generateFlashcards(model: string, sourceText: string): Promise<GenerationProposalItemDto[]> {
     try {
       console.log("Making request to OpenRouter with model:", model);
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -105,7 +105,9 @@ export class LLMService {
           }
           return null; // Return null for invalid blocks
         })
-        .filter((proposal: GenerationProposalDto | null): proposal is GenerationProposalDto => proposal !== null); // Filter out nulls and type guard // Return empty array if content is missing or no valid blocks found
+        .filter(
+          (proposal: GenerationProposalItemDto | null): proposal is GenerationProposalItemDto => proposal !== null
+        ); // Filter out nulls and type guard // Return empty array if content is missing or no valid blocks found
     } catch (error) {
       console.error("LLM Service error:", error);
       if (error instanceof LLMError) {

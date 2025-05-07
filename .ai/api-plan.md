@@ -24,11 +24,12 @@
 
 - **POST /flashcards**
 
-  - **Description**: Create one or multiple flashcards proposals (supports manual creation and AI-generated flashcards).
+  - **Description**: Create one or multiple flashcards. Supports manual creation and AI-generated flashcards. Associates flashcards with a deck, creating the deck by `deck_name` if it doesn't exist for the authenticated user.
   - **Request Payload**:
     ```json
     {
-      "flashcardsProposals": [
+      "deck_name": "string (required, max 100 characters)",
+      "flashcards": [
         {
           "front": "string (required, max 200 characters)",
           "back": "string (required, max 500 characters)",
@@ -40,19 +41,27 @@
     ```
   - **Validations**:
 
-    - Front side must not be empty and cannot exceed 200 characters
-    - Back side must not be empty and cannot exceed 500 characters
-    - Source must be one of: "manual", "ai-full", "ai-edited"
-    - If source is "ai-full" or "ai-edited", generation_id must reference a valid generation
-    - If source is "manual", generation_id must be null
-    - User can only create flashcards for themselves
+    - `deck_name` must not be empty and cannot exceed 100 characters.
+    - `flashcards` array must not be empty.
+    - Each flashcard's `front` side must not be empty and cannot exceed 200 characters.
+    - Each flashcard's `back` side must not be empty and cannot exceed 500 characters.
+    - Each flashcard's `source` must be one of: "manual", "ai-full", "ai-edited".
+    - If a flashcard's `source` is "ai-full" or "ai-edited", `generation_id` must reference a valid generation.
+    - If a flashcard's `source` is "manual", `generation_id` must be null.
+    - User can only create flashcards for themselves and assign them to their own decks.
 
-  - **Response**: JSON array of created flashcards, each including its id and timestamps.
+  - **Response**: JSON object containing the deck information and an array of created flashcards.
     ```json
     {
-      "flashcardsProposals": [
+      "deck": {
+        "id": "number",
+        "deck_name": "string",
+        "user_id": "string" 
+      },
+      "flashcards": [
         {
           "id": "number",
+          "deck_id": "number",
           "front": "string",
           "back": "string",
           "source": "manual | ai-full | ai-edited",
