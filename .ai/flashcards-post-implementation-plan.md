@@ -14,7 +14,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
 - Body (JSON):
   ```json
   {
-    "deckName": "string (req, max 100)",
+    "deck_name": "string (req, max 100)",
     "flashcards": [
       {
         "front": "string (req, max 200)",
@@ -26,7 +26,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
   }
   ```
 - Walidacja (Zod):
-  - `deckName`: non-empty, max 100 znaków
+  - `deck_name`: non-empty, max 100 znaków
   - `flashcards`: tablica, min 1 element
   - `flashcards[].front`: non-empty, max 200 znaków
   - `flashcards[].back`: non-empty, max 500 znaków
@@ -43,7 +43,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
   {
     "deck": {
       "id": "number",
-      "name": "string",
+      "deck_name": "string",
       "user_id": "string" 
     },
     "flashcards": [
@@ -123,5 +123,4 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
 
 ## 9. Dodatkowe uwagi
 
-- Rozważyć osobny endpoint (np. `POST /api/decks/generate-name`) do generowania nazwy talii (np. przez AI na podstawie `sourceText`), jeśli taka funkcjonalność jest potrzebna przed wywołaniem `POST /api/flashcards`. Obecny endpoint `POST /api/flashcards` oczekuje gotowej `deckName`.
 - Upewnić się, że typ `user_id` (np. UUID z Supabase Auth) jest spójnie używany w tabelach `decks` i `flashcards`.
