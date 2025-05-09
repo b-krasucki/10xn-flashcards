@@ -2,12 +2,9 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./db/database.types";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-interface User {
-  id: string;
-  email: string | undefined;
-  // Add other user properties as needed
-}
+type User = SupabaseUser;
 
 declare global {
   namespace App {

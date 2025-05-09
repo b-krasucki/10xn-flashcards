@@ -23,6 +23,14 @@ interface ProposalListProps {
   onSave?: (proposalsToSave: GenerationProposalItemDto[], deckName: string) => void;
   onDeckNameChange?: (newName: string) => void;
   onRegenerateDeckName?: (sourceText: string) => Promise<string | null>;
+  onEdit?: (proposal: GenerationProposalItemDto, index: number) => void;
+}
+
+interface FlashcardStats {
+  approved: number;
+  edited: number;
+  rejected: number;
+  unmarked: number;
 }
 
 export const ProposalList = ({
@@ -32,6 +40,7 @@ export const ProposalList = ({
   onSave,
   onDeckNameChange,
   onRegenerateDeckName,
+  onEdit,
 }: ProposalListProps) => {
   const [proposals, setProposals] = useState(initialProposals);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -45,6 +54,14 @@ export const ProposalList = ({
   const [isEditingDeckName, setIsEditingDeckName] = useState<boolean>(false);
   const [tempDeckName, setTempDeckName] = useState<string>("");
   const [isRegeneratingName, setIsRegeneratingName] = useState<boolean>(false);
+  const [editedCount, setEditedCount] = useState<number>(0);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [flashcardStats, setFlashcardStats] = useState<FlashcardStats>({
+    approved: 0,
+    edited: 0,
+    rejected: 0,
+    unmarked: 0,
+  });
 
   useEffect(() => {
     setDeckName(initialDeckName);
@@ -90,12 +107,21 @@ export const ProposalList = ({
 
   const handleSaveClick = (index: number) => {
     const updatedProposals = [...proposals];
-    updatedProposals[index] = { ...updatedProposals[index], front: editFront, back: editBack };
+    updatedProposals[index] = {
+      ...updatedProposals[index],
+      front: editFront,
+      back: editBack,
+      source: "ai-edited",
+    };
     setProposals(updatedProposals);
     setEditingIndex(null);
     setEditFront("");
     setEditBack("");
-    // TODO: Call onEdit callback prop here
+    // Automatically approve edited flashcard
+    const newApprovedIndices = new Set(approvedIndices);
+    newApprovedIndices.add(index);
+    setApprovedIndices(newApprovedIndices);
+    onEdit?.(updatedProposals[index], index);
   };
 
   const handleApproveClick = (index: number) => {
@@ -130,11 +156,42 @@ export const ProposalList = ({
     // TODO: Call onRejectAll callback prop here
   };
 
+  const calculateFlashcardStats = (): FlashcardStats => {
+    const stats: FlashcardStats = {
+      approved: 0,
+      edited: 0,
+      rejected: 0,
+      unmarked: 0,
+    };
+
+    proposals.forEach((proposal, index) => {
+      if (rejectedIndices.has(index)) {
+        stats.rejected++;
+      } else if (proposal.source === "ai-edited") {
+        stats.edited++;
+      } else if (approvedIndices.has(index)) {
+        stats.approved++;
+      } else {
+        stats.unmarked++;
+      }
+    });
+
+    return stats;
+  };
+
   const handleSaveAllClick = () => {
     const proposalsToSave = [...proposals];
     console.log(`Saving all proposals for deck: ${deckName}`, proposalsToSave);
-    onSave?.(proposalsToSave, deckName);
-    // TODO: Maybe clear state or show confirmation?
+
+    // Calculate and show statistics before saving
+    const stats = calculateFlashcardStats();
+    setFlashcardStats(stats);
+    setIsStatsModalOpen(true);
+  };
+
+  const handleConfirmSaveAll = () => {
+    onSave?.([...proposals], deckName);
+    setIsStatsModalOpen(false);
   };
 
   const handleSaveApprovedClick = () => {
@@ -142,6 +199,8 @@ export const ProposalList = ({
     const currentUnmarkedIndices = proposals
       .map((_, index) => index)
       .filter((index) => !approvedIndices.has(index) && !rejectedIndices.has(index));
+
+    const editedCount = currentUnmarkedIndices.filter((index) => proposals[index].source === "ai-edited").length;
 
     const approvedToSave = proposals.filter((_, index) => currentApprovedIndices.includes(index));
 
@@ -153,6 +212,7 @@ export const ProposalList = ({
     if (currentUnmarkedIndices.length > 0) {
       console.log("Found unmarked proposals:", currentUnmarkedIndices);
       setUnmarkedIndices(currentUnmarkedIndices);
+      setEditedCount(editedCount);
       setIsModalOpen(true);
     } else {
       console.log("No unmarked proposals found.");
@@ -262,7 +322,8 @@ export const ProposalList = ({
             const isEditing = editingIndex === index;
             const isApproved = approvedIndices.has(index);
             const isRejected = rejectedIndices.has(index);
-            const cardBgClass = isRejected ? "bg-red-100" : isApproved ? "bg-green-100" : "";
+            const isEdited = proposal.source === "ai-edited";
+            const cardBgClass = isRejected ? "bg-red-100" : isApproved ? "bg-green-100" : isEdited ? "bg-blue-50" : "";
 
             return (
               <Card key={index} className={cardBgClass}>
@@ -315,14 +376,16 @@ export const ProposalList = ({
                       >
                         {isRejected ? "Rejected" : "Reject"}
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleApproveClick(index)}
-                        disabled={isApproved}
-                        className={`bg-emerald-100 hover:bg-emerald-300 text-emerald-900 disabled:bg-emerald-50 disabled:text-emerald-400 ${isApproved ? "ring-2 ring-emerald-500" : ""}`}
-                      >
-                        {isApproved ? "Approved" : "Approve"}
-                      </Button>
+                      {proposal.source !== "ai-edited" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleApproveClick(index)}
+                          disabled={isApproved}
+                          className={`bg-emerald-100 hover:bg-emerald-300 text-emerald-900 disabled:bg-emerald-50 disabled:text-emerald-400 ${isApproved ? "ring-2 ring-emerald-500" : ""}`}
+                        >
+                          {isApproved ? "Approved" : "Approve"}
+                        </Button>
+                      )}
                     </>
                   )}
                 </CardFooter>
@@ -354,6 +417,51 @@ export const ProposalList = ({
         </div>
       )}
 
+      {/* Statistics Modal */}
+      <AlertDialog open={isStatsModalOpen} onOpenChange={setIsStatsModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Flashcard Statistics</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Here are the statistics for your flashcards:</p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between items-center bg-green-50 p-2 rounded">
+                  <span>Approved (ai-generated):</span>
+                  <span className="font-semibold">{flashcardStats.approved}</span>
+                </div>
+                <div className="flex justify-between items-center bg-blue-50 p-2 rounded">
+                  <span>Edited (ai-edited):</span>
+                  <span className="font-semibold">{flashcardStats.edited}</span>
+                </div>
+                <div className="flex justify-between items-center bg-red-50 p-2 rounded">
+                  <span>Rejected:</span>
+                  <span className="font-semibold">{flashcardStats.rejected}</span>
+                </div>
+                <div className="flex justify-between items-center bg-gray-100 p-2 rounded">
+                  <span>Unmarked:</span>
+                  <span className="font-semibold">{flashcardStats.unmarked}</span>
+                </div>
+                <div className="flex justify-between items-center bg-gray-50 p-2 rounded border-t-2 border-gray-200 mt-4 pt-4">
+                  <span className="font-medium">Total:</span>
+                  <span className="font-semibold">
+                    {flashcardStats.approved +
+                      flashcardStats.edited +
+                      flashcardStats.rejected +
+                      flashcardStats.unmarked}
+                  </span>
+                </div>
+              </div>
+              <p className="mt-4">Do you want to proceed with saving all flashcards?</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsStatsModalOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSaveAll}>Save All</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Existing Unmarked Cards Modal */}
       <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -361,6 +469,12 @@ export const ProposalList = ({
             <AlertDialogDescription>
               You want to save the approved flashcards. Do you want to save the remaining {unmarkedIndices.length}{" "}
               flashcards that were not marked as approved or rejected for the deck &quot;{deckName}&quot;?
+              {editedCount > 0 && (
+                <>
+                  {" "}
+                  Among them, {editedCount} {editedCount === 1 ? "flashcard has" : "flashcards have"} been edited.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

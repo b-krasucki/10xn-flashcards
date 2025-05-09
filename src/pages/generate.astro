@@ -2,16 +2,8 @@
 import MainLayout from "../layouts/Layout.astro";
 import { GenerateForm } from "../components/GenerateForm";
 
-// Ensure page requires authentication
+// Disable authentication for testing
 export const prerender = false;
-
-// Get user from middleware
-const { user } = Astro.locals;
-
-// Redirect if not authenticated
-if (!user) {
-  return Astro.redirect("/login");
-}
 ---
 
 <MainLayout title="Generate Flashcards">

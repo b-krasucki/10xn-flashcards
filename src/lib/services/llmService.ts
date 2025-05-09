@@ -143,7 +143,7 @@ export class LLMService {
             },
             {
               role: "user",
-              content: `Suggest a concise and relevant deck name (5-12 words) for the following text. Respond ONLY with the suggested deck name:\n\n${sourceText}`,
+              content: `Suggest a concise and relevant deck name (5-12 words) for the following text. Response should be in language of the source text. Respond ONLY with the suggested deck name:\n\n${sourceText}`,
             },
           ],
           max_tokens: 500, // Limit response length for deck name

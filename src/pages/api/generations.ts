@@ -38,15 +38,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const proposals = await llmService.generateFlashcards(model, source_text);
 
     // Generowanie nazwy talii
-    // Używamy tego samego modelu i tekstu źródłowego
-    // Obsługa błędów generowania nazwy jest tutaj uproszczona dla przykładu
-    // Można dodać bardziej szczegółową obsługę błędów, jeśli jest to wymagane
     let deckName = `Generated Deck for ${source_text_hash.substring(0, 8)}`; // Fallback name
     try {
       deckName = await llmService.generateDeckName(model, source_text);
     } catch (nameGenError) {
       console.error("Failed to generate deck name, using fallback:", nameGenError);
-      // Opcjonalnie zaloguj ten błąd osobno
     }
 
     const generation_duration = Date.now() - start;
@@ -65,8 +61,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .select("id")
       .single();
 
-    if (dbError || !generation) {
-      throw new Error("Nie udało się zapisać rekordu generacji");
+    if (dbError) {
+      console.error("Database error during generation insert:", dbError);
+      throw new Error(`Database error: ${dbError.message}`);
+    }
+
+    if (!generation) {
+      console.error("No generation data returned after insert");
+      throw new Error("Failed to create generation record");
     }
 
     return new Response(
@@ -97,9 +99,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
         error_message: error.message,
       });
 
-      return new Response(JSON.stringify({ error: "Błąd serwisu LLM" }), { status: 500 });
+      return new Response(
+        JSON.stringify({
+          error: "Błąd serwisu LLM",
+          details: error.message,
+        }),
+        { status: 500 }
+      );
     }
 
-    return new Response(JSON.stringify({ error: "Błąd wewnętrzny serwera" }), { status: 500 });
+    return new Response(
+      JSON.stringify({
+        error: "Błąd wewnętrzny serwera",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      { status: 500 }
+    );
   }
 };

@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
-import { createFlashcardsSchema } from "../../../lib/schemas/flashcards.schema";
-import type { CreateFlashcardsCommandDto, ErrorResponseDto } from "../../../types";
-import { FlashcardsService } from "../../../lib/services/flashcards.service";
+import { createFlashcardsSchema } from "../../lib/schemas/flashcards.schema";
+import type { CreateFlashcardsCommandDto, ErrorResponseDto } from "../../types";
+import { FlashcardsService } from "../../lib/services/flashcards.service";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../../db/database.types";
+import type { Database } from "../../db/database.types";
 
 export const prerender = false;
 

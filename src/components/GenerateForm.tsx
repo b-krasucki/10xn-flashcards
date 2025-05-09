@@ -143,6 +143,15 @@ const useGenerationForm = () => {
     setState((prev) => ({ ...prev, deckName: newName }));
   };
 
+  const handleProposalEdit = (editedProposal: GenerationProposalItemDto, index: number) => {
+    setState((prev) => {
+      if (!prev.proposals) return prev;
+      const updatedProposals = [...prev.proposals];
+      updatedProposals[index] = editedProposal;
+      return { ...prev, proposals: updatedProposals };
+    });
+  };
+
   return {
     state,
     charCount,
@@ -152,6 +161,7 @@ const useGenerationForm = () => {
     handleGenerateClick,
     handleRegenerateDeckName,
     handleDeckNameChange,
+    handleProposalEdit,
   };
 };
 
@@ -165,13 +175,14 @@ export const GenerateForm = () => {
     handleGenerateClick,
     handleRegenerateDeckName,
     handleDeckNameChange,
+    handleProposalEdit,
   } = useGenerationForm();
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Generate New Flashcards</CardTitle>
+          <CardTitle>Generate New Flashcards (generationID: {state.generationId})</CardTitle>
           <CardDescription>Enter your study materials and let AI create flashcards for you</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -198,6 +209,7 @@ export const GenerateForm = () => {
           sourceText={state.sourceText}
           onRegenerateDeckName={handleRegenerateDeckName}
           onDeckNameChange={handleDeckNameChange}
+          onEdit={handleProposalEdit}
         />
       )}
       <OverlayLoader isVisible={state.isLoading || state.isRegeneratingName} />

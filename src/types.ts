@@ -121,7 +121,7 @@ export interface CreateGenerationCommandDto {
 export interface GenerationProposalItemDto {
   front: string;
   back: string;
-  source: "ai-full"; // AI proposals are initially marked as 'ai-full'
+  source: "ai-full" | "ai-edited"; // Allow both ai-full and ai-edited sources
 }
 
 /**
