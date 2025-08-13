@@ -16,6 +16,7 @@ import { ProposalList } from "./ProposalList";
 import { ErrorMessage } from "./ErrorMessage";
 import { ModelSelect } from "./ModelSelect";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { toast } from "@/lib/utils/toast";
 
 interface GenerateViewState {
   sourceText: string;
@@ -31,7 +32,7 @@ interface GenerateViewState {
 const useGenerationForm = () => {
   const [state, setState] = useState<GenerateViewState>({
     sourceText: "",
-    model: "google/gemini-2.5-flash-preview", // Default model
+    model: "google/gemini-2.5-flash-preview",
     isLoading: false,
     error: null,
     proposals: null,
@@ -44,6 +45,7 @@ const useGenerationForm = () => {
   const isValidLength = charCount >= 1000 && charCount <= 10000;
 
   const handleTextChange = (text: string) => {
+    console.log("Changing text to:", text.substring(0, 50) + (text.length > 50 ? "..." : ""));
     setState((prev) => ({
       ...prev,
       sourceText: text,
@@ -94,12 +96,25 @@ const useGenerationForm = () => {
         deckName: data.deckName ?? `Generated Deck ${data.generation_id ?? ""}`.trim(),
         isLoading: false,
       }));
+
+      toast({
+        title: "Success",
+        description: "Flashcards generated successfully",
+        variant: "success",
+      });
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : "An unexpected error occurred",
+        error: errorMessage,
         isLoading: false,
       }));
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -125,6 +140,13 @@ const useGenerationForm = () => {
 
       const data = (await response.json()) as { deckName: string };
       setState((prev) => ({ ...prev, deckName: data.deckName, isRegeneratingName: false }));
+
+      toast({
+        title: "Success",
+        description: "Deck name regenerated successfully",
+        variant: "success",
+      });
+
       return data.deckName;
     } catch (error: unknown) {
       const errorMessage =
@@ -134,6 +156,13 @@ const useGenerationForm = () => {
         error: errorMessage,
         isRegeneratingName: false,
       }));
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+
       return null;
     }
   };
@@ -152,6 +181,32 @@ const useGenerationForm = () => {
     });
   };
 
+  const resetForm = () => {
+    console.log("RESETTING FORM STATE");
+
+    // Force immediate state update for sourceText
+    setState((prevState) => {
+      console.log("Previous sourceText length:", prevState.sourceText.length);
+      const newState = {
+        sourceText: "",
+        model: "google/gemini-2.5-flash-preview",
+        isLoading: false,
+        error: null,
+        proposals: null,
+        generationId: null,
+        deckName: null,
+        isRegeneratingName: false,
+      };
+      console.log("New sourceText length:", newState.sourceText.length);
+      return newState;
+    });
+
+    // Log after state update to verify
+    setTimeout(() => {
+      console.log("After reset, state should be cleared");
+    }, 100);
+  };
+
   return {
     state,
     charCount,
@@ -162,6 +217,7 @@ const useGenerationForm = () => {
     handleRegenerateDeckName,
     handleDeckNameChange,
     handleProposalEdit,
+    resetForm,
   };
 };
 
@@ -176,13 +232,23 @@ export const GenerateForm = () => {
     handleRegenerateDeckName,
     handleDeckNameChange,
     handleProposalEdit,
+    resetForm,
   } = useGenerationForm();
+
+  const handleSaveSuccess = () => {
+    console.log("GenerateForm: handleSaveSuccess called");
+    // Add a visible console trace to check the call stack
+    console.trace("Reset Form Trace");
+    resetForm();
+  };
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Generate New Flashcards (generationID: {state.generationId})</CardTitle>
+          <CardTitle>
+            Generate New Flashcards {state.generationId ? `(generationID: ${state.generationId})` : ""}
+          </CardTitle>
           <CardDescription>Enter your study materials and let AI create flashcards for you</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -202,17 +268,19 @@ export const GenerateForm = () => {
       </Card>
 
       <ErrorMessage message={state.error} />
-      {state.proposals && state.deckName !== null && (
+      {state.proposals && state.deckName !== null && state.generationId !== null && (
         <ProposalList
           proposals={state.proposals}
           deckName={state.deckName}
           sourceText={state.sourceText}
+          generationId={state.generationId}
           onRegenerateDeckName={handleRegenerateDeckName}
           onDeckNameChange={handleDeckNameChange}
           onEdit={handleProposalEdit}
+          onSaveSuccess={handleSaveSuccess}
         />
       )}
-      <OverlayLoader isVisible={state.isLoading || state.isRegeneratingName} />
+      <OverlayLoader isVisible={state.isLoading} />
     </div>
   );
 };

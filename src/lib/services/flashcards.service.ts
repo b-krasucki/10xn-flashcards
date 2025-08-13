@@ -78,7 +78,42 @@ export class FlashcardsService {
       };
     }
 
-    // Step 2: Validate generation_ids (commented out, RLS should handle)
+    // Step 2: Update generations table with accepted counts
+    const generationCounts = new Map<number, { unedited: number; edited: number }>();
+    flashcardsDto.forEach((flashcard) => {
+      if (flashcard.generation_id) {
+        const counts = generationCounts.get(flashcard.generation_id) || { unedited: 0, edited: 0 };
+        if (flashcard.source === "ai-full") {
+          counts.unedited++;
+        } else if (flashcard.source === "ai-edited") {
+          counts.edited++;
+        }
+        generationCounts.set(flashcard.generation_id, counts);
+      }
+    });
+
+    // Update each affected generation
+    for (const [generationId, counts] of generationCounts.entries()) {
+      const { error: updateError } = await this.supabase
+        .from("generations")
+        .update({
+          accepted_unedited_count: counts.unedited,
+          accepted_edited_count: counts.edited,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", generationId)
+        .eq("user_id", userId);
+
+      if (updateError) {
+        console.error("Error updating generation counts:", {
+          message: updateError.message,
+          details: updateError.details,
+          code: updateError.code,
+          generationId,
+        });
+        // Don't throw here, continue with flashcard creation
+      }
+    }
 
     // Step 3: Prepare flashcard inserts
     const flashcardsToInsert = flashcardsDto.map(

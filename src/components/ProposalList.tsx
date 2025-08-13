@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import type { GenerationProposalItemDto } from "../types";
+import type { GenerationProposalItemDto, CreateFlashcardItemDto } from "../types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/lib/utils/toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,10 +21,12 @@ interface ProposalListProps {
   proposals: readonly GenerationProposalItemDto[];
   sourceText?: string;
   deckName: string;
-  onSave?: (proposalsToSave: GenerationProposalItemDto[], deckName: string) => void;
+  generationId: number;
+  onSave?: (proposalsToSave: CreateFlashcardItemDto[], deckName: string) => void;
   onDeckNameChange?: (newName: string) => void;
   onRegenerateDeckName?: (sourceText: string) => Promise<string | null>;
   onEdit?: (proposal: GenerationProposalItemDto, index: number) => void;
+  onSaveSuccess?: () => void;
 }
 
 interface FlashcardStats {
@@ -37,10 +40,12 @@ export const ProposalList = ({
   proposals: initialProposals,
   sourceText,
   deckName: initialDeckName,
+  generationId,
   onSave,
   onDeckNameChange,
   onRegenerateDeckName,
   onEdit,
+  onSaveSuccess,
 }: ProposalListProps) => {
   const [proposals, setProposals] = useState(initialProposals);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -62,6 +67,7 @@ export const ProposalList = ({
     rejected: 0,
     unmarked: 0,
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setDeckName(initialDeckName);
@@ -180,7 +186,20 @@ export const ProposalList = ({
   };
 
   const handleSaveAllClick = () => {
-    const proposalsToSave = [...proposals];
+    // Prepare all proposals with correct source fields
+    const proposalsToSave = proposals.map((proposal) => {
+      // If the proposal was edited, keep it as ai-edited
+      if (proposal.source === "ai-edited") {
+        return proposal;
+      }
+
+      // For all other proposals, set source to ai-full
+      return {
+        ...proposal,
+        source: "ai-full" as const,
+      };
+    });
+
     console.log(`Saving all proposals for deck: ${deckName}`, proposalsToSave);
 
     // Calculate and show statistics before saving
@@ -189,12 +208,82 @@ export const ProposalList = ({
     setIsStatsModalOpen(true);
   };
 
-  const handleConfirmSaveAll = () => {
-    onSave?.([...proposals], deckName);
-    setIsStatsModalOpen(false);
+  const handleConfirmSaveAll = async () => {
+    // Save ALL proposals, including rejected ones
+    const proposalsToSave: CreateFlashcardItemDto[] = proposals.map((proposal) => ({
+      front: proposal.front,
+      back: proposal.back,
+      source: proposal.source === "ai-edited" ? "ai-edited" : ("ai-full" as const),
+      generation_id: generationId,
+    }));
+
+    const requestData = {
+      deck_name: deckName,
+      flashcards: proposalsToSave,
+    };
+
+    // Log request data for debugging
+    console.log("Sending request data:", JSON.stringify(requestData, null, 2));
+
+    setIsSaving(true);
+
+    try {
+      const response = await fetch("/api/flashcards", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.error("API Error Response:", responseData);
+        throw new Error(
+          responseData.details
+            ? `Validation errors: ${JSON.stringify(responseData.details, null, 2)}`
+            : responseData.error || "Failed to save flashcards"
+        );
+      }
+
+      toast({
+        title: "Success",
+        description: `Successfully saved ${proposalsToSave.length} flashcards to deck "${deckName}"`,
+        variant: "success",
+      });
+
+      // Call onSave callback if provided
+      onSave?.(proposalsToSave, deckName);
+
+      // Reset the form after successful save - Execute this synchronously
+      if (onSaveSuccess) {
+        console.log("ProposalList: Calling onSaveSuccess to reset form");
+        onSaveSuccess();
+
+        // Force a delay before closing modals to ensure state updates have time to process
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
+      // Close the modal and set states
+      setIsSaving(false);
+      setIsStatsModalOpen(false);
+    } catch (error: unknown) {
+      console.error("Error saving flashcards:", error);
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save flashcards",
+        variant: "destructive",
+      });
+
+      // Still need to update states on error
+      setIsSaving(false);
+      setIsStatsModalOpen(false);
+    }
   };
 
-  const handleSaveApprovedClick = () => {
+  const handleSaveApprovedClick = async () => {
     const currentApprovedIndices = Array.from(approvedIndices);
     const currentUnmarkedIndices = proposals
       .map((_, index) => index)
@@ -202,36 +291,161 @@ export const ProposalList = ({
 
     const editedCount = currentUnmarkedIndices.filter((index) => proposals[index].source === "ai-edited").length;
 
-    const approvedToSave = proposals.filter((_, index) => currentApprovedIndices.includes(index));
+    // Prepare approved flashcards
+    const approvedToSave = proposals
+      .filter((_, index) => currentApprovedIndices.includes(index))
+      .map((proposal) => ({
+        front: proposal.front,
+        back: proposal.back,
+        source: proposal.source === "ai-edited" ? "ai-edited" : ("ai-full" as const),
+        generation_id: generationId,
+      }));
 
-    if (approvedToSave.length > 0) {
-      console.log(`Saving approved proposals for deck: ${deckName}`, approvedToSave);
-      onSave?.(approvedToSave, deckName);
-    }
+    // If there are no unmarked flashcards, save approved ones directly
+    if (currentUnmarkedIndices.length === 0) {
+      try {
+        const response = await fetch("/api/flashcards", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            deck_name: deckName,
+            flashcards: approvedToSave,
+          }),
+        });
 
-    if (currentUnmarkedIndices.length > 0) {
-      console.log("Found unmarked proposals:", currentUnmarkedIndices);
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseData.error || "Failed to save flashcards");
+        }
+
+        toast({
+          title: "Success",
+          description: `Successfully saved ${approvedToSave.length} approved flashcards to deck "${deckName}"`,
+          variant: "success",
+        });
+
+        if (onSaveSuccess) {
+          onSaveSuccess();
+        }
+      } catch (error: unknown) {
+        console.error("Error saving flashcards:", error);
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to save flashcards",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // If there are unmarked flashcards, show the modal
       setUnmarkedIndices(currentUnmarkedIndices);
       setEditedCount(editedCount);
       setIsModalOpen(true);
-    } else {
-      console.log("No unmarked proposals found.");
-      // Optional: Add success feedback if only approved were saved
     }
   };
 
-  const handleModalSave = () => {
-    const unmarkedToSave = proposals.filter((_, index) => unmarkedIndices.includes(index));
-    if (unmarkedToSave.length > 0) {
-      console.log(`Saving unmarked proposals from modal for deck: ${deckName}`, unmarkedToSave);
-      onSave?.(unmarkedToSave, deckName);
-      // Optional: Update state to mark these as approved now?
-      // const newlyApproved = new Set(approvedIndices);
-      // unmarkedIndices.forEach(idx => newlyApproved.add(idx));
-      // setApprovedIndices(newlyApproved);
+  const handleModalSaveOnlyApproved = async () => {
+    const currentApprovedIndices = Array.from(approvedIndices);
+    const approvedToSave = proposals
+      .filter((_, index) => currentApprovedIndices.includes(index))
+      .map((proposal) => ({
+        front: proposal.front,
+        back: proposal.back,
+        source: proposal.source === "ai-edited" ? "ai-edited" : ("ai-full" as const),
+        generation_id: generationId,
+      }));
+
+    try {
+      const response = await fetch("/api/flashcards", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deck_name: deckName,
+          flashcards: approvedToSave,
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to save flashcards");
+      }
+
+      toast({
+        title: "Success",
+        description: `Successfully saved ${approvedToSave.length} approved flashcards to deck "${deckName}"`,
+        variant: "success",
+      });
+
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      }
+    } catch (error: unknown) {
+      console.error("Error saving flashcards:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save flashcards",
+        variant: "destructive",
+      });
+    } finally {
+      setIsModalOpen(false);
+      setUnmarkedIndices([]);
     }
-    setIsModalOpen(false);
-    setUnmarkedIndices([]);
+  };
+
+  const handleModalSave = async () => {
+    const currentApprovedIndices = Array.from(approvedIndices);
+    const approvedAndUnmarkedToSave = proposals
+      .filter((_, index) => currentApprovedIndices.includes(index) || unmarkedIndices.includes(index))
+      .map((proposal) => ({
+        front: proposal.front,
+        back: proposal.back,
+        source: proposal.source === "ai-edited" ? "ai-edited" : ("ai-full" as const),
+        generation_id: generationId,
+      }));
+
+    try {
+      const response = await fetch("/api/flashcards", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deck_name: deckName,
+          flashcards: approvedAndUnmarkedToSave,
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to save flashcards");
+      }
+
+      toast({
+        title: "Success",
+        description: `Successfully saved ${approvedAndUnmarkedToSave.length} flashcards to deck "${deckName}"`,
+        variant: "success",
+      });
+
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      }
+    } catch (error: unknown) {
+      console.error("Error saving flashcards:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save flashcards",
+        variant: "destructive",
+      });
+    } finally {
+      setIsModalOpen(false);
+      setUnmarkedIndices([]);
+    }
   };
 
   const handleModalCancel = () => {
@@ -411,8 +625,15 @@ export const ProposalList = ({
           >
             Save Approved Flashcards
           </Button>
-          <Button onClick={handleSaveAllClick} disabled={proposals.length === 0}>
-            Save All
+          <Button onClick={handleSaveAllClick} disabled={proposals.length === 0 || isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save All"
+            )}
           </Button>
         </div>
       )}
@@ -456,7 +677,16 @@ export const ProposalList = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setIsStatsModalOpen(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSaveAll}>Save All</AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmSaveAll} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save All"
+              )}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -467,8 +697,8 @@ export const ProposalList = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Save Unmarked Flashcards?</AlertDialogTitle>
             <AlertDialogDescription>
-              You want to save the approved flashcards. Do you want to save the remaining {unmarkedIndices.length}{" "}
-              flashcards that were not marked as approved or rejected for the deck &quot;{deckName}&quot;?
+              You want to save the approved flashcards. Do you want to save also the remaining {unmarkedIndices.length}{" "}
+              flashcards ?
               {editedCount > 0 && (
                 <>
                   {" "}
@@ -477,9 +707,19 @@ export const ProposalList = ({
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex justify-end gap-2">
             <AlertDialogCancel onClick={handleModalCancel}>Back</AlertDialogCancel>
-            <AlertDialogAction onClick={handleModalSave}>Save</AlertDialogAction>
+            {approvedIndices.size > 0 && (
+              <AlertDialogAction
+                onClick={handleModalSaveOnlyApproved}
+                className="bg-emerald-100 hover:bg-emerald-300 text-emerald-900"
+              >
+                Save Only Approved
+              </AlertDialogAction>
+            )}
+            <AlertDialogAction onClick={handleModalSave} className="hover:bg-gray-600">
+              Save
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
