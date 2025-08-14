@@ -1,0 +1,298 @@
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/lib/utils/toast";
+import { OverlayLoader } from "./OverlayLoader";
+
+interface UserProfile {
+  email: string;
+  created_at: string;
+  total_flashcards: number;
+  total_generations: number;
+}
+
+export const ProfileCard: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    email: "user@example.com",
+    created_at: "2024-01-01T12:00:00Z",
+    total_flashcards: 247,
+    total_generations: 15
+  });
+  
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const getInitials = (email: string) => {
+    return email.split('@')[0].substring(0, 2).toUpperCase();
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast({
+        title: "Błąd",
+        description: "Hasło musi mieć co najmniej 6 znaków",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Błąd",
+        description: "Hasła nie są identyczne",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Sukces",
+        description: "Hasło zostało zmienione",
+        variant: "success",
+      });
+      
+      setNewPassword("");
+      setConfirmPassword("");
+      setIsChangingPassword(false);
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas zmiany hasła",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsLoading(true);
+    try {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Konto usunięte",
+        description: "Twoje konto zostało trwale usunięte",
+        variant: "success",
+      });
+      
+      // Redirect to home or auth page
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas usuwania konta",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Wylogowano",
+        description: "Zostałeś pomyślnie wylogowany",
+        variant: "success",
+      });
+      
+      // Redirect to auth page
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1000);
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas wylogowywania",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Profile Information */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src="" alt={`Avatar użytkownika ${userProfile.email}`} />
+              <AvatarFallback className="text-lg">
+                {getInitials(userProfile.email)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle>Informacje o profilu</CardTitle>
+              <CardDescription>
+                Twoje dane konta i statystyki
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Adres e-mail</Label>
+              <p className="text-sm font-medium mt-1">{userProfile.email}</p>
+            </div>
+            <div>
+              <Label>Data rejestracji</Label>
+              <p className="text-sm font-medium mt-1">
+                {new Date(userProfile.created_at).toLocaleDateString("pl-PL")}
+              </p>
+            </div>
+            <div>
+              <Label>Liczba fiszek</Label>
+              <p className="text-sm font-medium mt-1">{userProfile.total_flashcards}</p>
+            </div>
+            <div>
+              <Label>Liczba generacji</Label>
+              <p className="text-sm font-medium mt-1">{userProfile.total_generations}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Change Password */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Zmiana hasła</CardTitle>
+          <CardDescription>
+            Aktualizuj swoje hasło, aby zachować bezpieczeństwo konta
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!isChangingPassword ? (
+            <Button onClick={() => setIsChangingPassword(true)}>
+              Zmień hasło
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nowe hasło</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Potwierdź hasło</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button onClick={handleChangePassword} disabled={isLoading}>
+                  Zapisz hasło
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setIsChangingPassword(false);
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  variant="outline"
+                  disabled={isLoading}
+                >
+                  Anuluj
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Account Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Akcje konta</CardTitle>
+          <CardDescription>
+            Zarządzaj swoim kontem lub wyloguj się
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button onClick={handleLogout} variant="outline" disabled={isLoading}>
+              Wyloguj się
+            </Button>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={isLoading}>
+                  Usuń konto
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Usuń konto</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Czy na pewno chcesz usunąć swoje konto? Ta akcja jest nieodwracalna i 
+                    spowoduje trwałe usunięcie wszystkich Twoich danych, w tym fiszek i postępów w nauce.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeleteAccount}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Usuń trwale
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          
+          <div className="pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              <strong>Uwaga:</strong> Usunięcie konta spowoduje trwałą utratę wszystkich danych. 
+              Ta operacja nie może być cofnięta.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <OverlayLoader isVisible={isLoading} />
+    </div>
+  );
+};

@@ -21,6 +21,81 @@ const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 // Initialize service
 const flashcardsService = new FlashcardsService(supabase);
 
+export const GET: APIRoute = async ({ url }) => {
+  // Using test user ID from environment variables
+  const userId = testUserId;
+
+  try {
+    // Get query parameters
+    const generationId = url.searchParams.get('generation');
+    const deckId = url.searchParams.get('deck');
+
+    // Build the query - query flashcards table with proper joins
+    let query = supabase
+      .from('flashcards')
+      .select(`
+        id,
+        front,
+        back,
+        source,
+        generation_id,
+        created_at,
+        updated_at,
+        flashcards_deck_names!deck_name_id(
+          deck_name
+        )
+      `)
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
+
+    // Apply generation filter if provided
+    if (generationId) {
+      query = query.eq('generation_id', parseInt(generationId, 10));
+    }
+
+    // Apply deck filter if provided
+    if (deckId) {
+      query = query.eq('deck_name_id', parseInt(deckId, 10));
+    }
+
+    const { data: flashcards, error } = await query;
+
+    if (error) {
+      console.error('Error fetching flashcards:', error);
+      return new Response(JSON.stringify({ error: 'Failed to fetch flashcards', details: error }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Transform the data to match the expected format
+    const transformedFlashcards = (flashcards || []).map(flashcard => ({
+      id: flashcard.id,
+      front: flashcard.front,
+      back: flashcard.back,
+      source: flashcard.source,
+      deck_name: flashcard.flashcards_deck_names?.deck_name,
+      created_at: flashcard.created_at,
+      updated_at: flashcard.updated_at
+    }));
+
+    return new Response(JSON.stringify({ 
+      flashcards: transformedFlashcards,
+      total: transformedFlashcards.length
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+};
+
 export const POST: APIRoute = async ({ request }) => {
   // Using test user ID from environment variables
   const userId = testUserId;
