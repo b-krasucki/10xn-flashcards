@@ -196,7 +196,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
   );
 };
 
-const AddFlashcardForm: React.FC<{ onAdd: (flashcard: Omit<FlashcardData, 'id' | 'created_at' | 'updated_at'>) => void; onCancel: () => void }> = ({ onAdd, onCancel }) => {
+const AddFlashcardForm: React.FC<{ onAdd: (flashcard: Omit<FlashcardData, 'id' | 'created_at' | 'updated_at'>) => void; onCancel: () => void; deckId?: string }> = ({ onAdd, onCancel, deckId }) => {
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
 
@@ -345,9 +345,23 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
         console.log('Flashcards data received:', data);
         setFlashcards(data.flashcards || []);
         
-        // Set deck name from first flashcard if available
+        // Set deck name from first flashcard if available, or fetch from decks API if empty
         if (data.flashcards && data.flashcards.length > 0 && deckId) {
           setDeckName(data.flashcards[0].deck_name || '');
+        } else if (deckId && data.flashcards && data.flashcards.length === 0) {
+          // If the deck is empty, try to get deck name from decks API
+          try {
+            const deckResponse = await fetch('/api/decks');
+            if (deckResponse.ok) {
+              const deckData = await deckResponse.json();
+              const currentDeck = deckData.decks.find((deck: any) => deck.id === parseInt(deckId, 10));
+              if (currentDeck) {
+                setDeckName(currentDeck.deck_name);
+              }
+            }
+          } catch (deckError) {
+            console.error('Error fetching deck name:', deckError);
+          }
         }
       } catch (error) {
         console.error('Error fetching flashcards:', error);
@@ -391,18 +405,71 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
   };
 
   const handleAddFlashcard = async (newFlashcard: Omit<FlashcardData, 'id' | 'created_at' | 'updated_at'>) => {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const now = new Date().toISOString();
-    const flashcard: FlashcardData = {
-      ...newFlashcard,
-      id: Math.max(...flashcards.map(f => f.id), 0) + 1,
-      created_at: now,
-      updated_at: now,
-    };
-    
-    setFlashcards(prev => [flashcard, ...prev]);
+    try {
+      // If we have a deckId, we need to get the deck name first
+      let deckNameToUse = deckName;
+      
+      if (deckId && !deckNameToUse) {
+        // Fetch deck name from API
+        const deckResponse = await fetch('/api/decks');
+        if (deckResponse.ok) {
+          const deckData = await deckResponse.json();
+          const currentDeck = deckData.decks.find((deck: any) => deck.id === parseInt(deckId, 10));
+          if (currentDeck) {
+            deckNameToUse = currentDeck.deck_name;
+            setDeckName(currentDeck.deck_name);
+          }
+        }
+      }
+      
+      if (!deckNameToUse) {
+        throw new Error('Nie można określić nazwy talii');
+      }
+
+      // Use the existing API endpoint
+      const response = await fetch('/api/flashcards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deck_name: deckNameToUse,
+          flashcards: [{
+            front: newFlashcard.front,
+            back: newFlashcard.back,
+            source: newFlashcard.source,
+            generation_id: null // Manual flashcards have no generation_id
+          }]
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create flashcard');
+      }
+
+      const result = await response.json();
+      
+      // Add the newly created flashcard to our list
+      if (result.flashcards && result.flashcards.length > 0) {
+        const createdFlashcard = result.flashcards[0];
+        const flashcardData: FlashcardData = {
+          id: createdFlashcard.id,
+          front: createdFlashcard.front,
+          back: createdFlashcard.back,
+          source: createdFlashcard.source,
+          deck_name: result.deck.deck_name,
+          created_at: createdFlashcard.created_at,
+          updated_at: createdFlashcard.updated_at,
+        };
+        
+        setFlashcards(prev => [flashcardData, ...prev]);
+      }
+      
+    } catch (error) {
+      console.error('Error adding flashcard:', error);
+      throw error; // Re-throw so the form can handle the error
+    }
   };
 
   const handleDeleteDeck = async () => {
@@ -530,6 +597,7 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
         <AddFlashcardForm 
           onAdd={handleAddFlashcard}
           onCancel={() => setIsAddingNew(false)}
+          deckId={deckId}
         />
       )}
 

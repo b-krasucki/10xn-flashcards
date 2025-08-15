@@ -254,13 +254,39 @@ export const DecksGrid: React.FC = () => {
   };
 
   const handleCreateDeck = async (name: string) => {
-    // For now, we'll create a deck by adding flashcards to it
-    // This is a placeholder - you might want to implement a proper deck creation endpoint
-    toast({
-      title: "Info",
-      description: "Aby utworzyć nową talię, przejdź do generowania fiszek",
-      variant: "default",
-    });
+    try {
+      const response = await fetch('/api/decks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ deck_name: name }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create deck');
+      }
+
+      const data = await response.json();
+      const newDeck = data.deck;
+
+      // Add new deck to local state
+      setDecks(prev => [newDeck, ...prev]);
+
+      toast({
+        title: "Sukces",
+        description: `Talia "${name}" została utworzona`,
+        variant: "success",
+      });
+
+      // Redirect to the new deck's page
+      window.location.href = `/deck/${newDeck.id}`;
+
+    } catch (error) {
+      console.error('Error creating deck:', error);
+      throw error; // Re-throw so CreateDeckDialog can handle it
+    }
   };
 
   if (isLoading) {

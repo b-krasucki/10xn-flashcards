@@ -122,6 +122,60 @@ export const DELETE: APIRoute = async ({ url }) => {
   }
 };
 
+export const POST: APIRoute = async ({ request }) => {
+  try {
+    const body = await request.json();
+    const { deck_name } = body;
+
+    if (!deck_name || !deck_name.trim()) {
+      return new Response(JSON.stringify({ error: 'Deck name is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Create new deck
+    const { data, error } = await supabase
+      .from('flashcards_deck_names')
+      .insert({
+        deck_name: deck_name.trim(),
+        user_id: testUserId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating deck:', error);
+      return new Response(JSON.stringify({ error: 'Failed to create deck' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    return new Response(JSON.stringify({ 
+      deck: {
+        id: data.id,
+        deck_name: data.deck_name,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        flashcard_count: 0
+      }
+    }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+};
+
 export const PUT: APIRoute = async ({ request, url }) => {
   try {
     const deckId = url.searchParams.get('id');
