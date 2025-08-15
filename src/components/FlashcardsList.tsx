@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/lib/utils/toast";
 import { OverlayLoader } from "./OverlayLoader";
+import { Edit2, Trash2 } from "lucide-react";
 
 interface FlashcardData {
   id: number;
@@ -90,7 +91,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
     <Card className="relative">
       <CardHeader>
         <div className="flex justify-between items-start">
-          <div>
+          <div className="flex-1">
             <CardTitle className="text-lg">Fiszka #{flashcard.id}</CardTitle>
             <CardDescription>
               {getSourceLabel(flashcard.source)} • 
@@ -98,6 +99,45 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
               {new Date(flashcard.updated_at).toLocaleDateString("pl-PL")}
             </CardDescription>
           </div>
+          {!isEditing && (
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                aria-label="Edytuj fiszkę"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                    aria-label="Usuń fiszkę"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Usuń fiszkę</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Czy na pewno chcesz usunąć tę fiszkę? Ta akcja nie może być cofnięta.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(flashcard.id)}>
+                      Usuń
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -148,37 +188,6 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
             <div className="space-y-2">
               <h4 className="font-medium">Tył:</h4>
               <p className="text-sm bg-muted p-3 rounded">{flashcard.back}</p>
-            </div>
-            <div className="flex space-x-2">
-              <Button 
-                onClick={() => setIsEditing(true)} 
-                variant="outline" 
-                size="sm"
-                aria-label="Edytuj fiszkę"
-              >
-                Edytuj
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" aria-label="Usuń fiszkę">
-                    Usuń
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Usuń fiszkę</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Czy na pewno chcesz usunąć tę fiszkę? Ta akcja nie może być cofnięta.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(flashcard.id)}>
-                      Usuń
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </>
         )}
@@ -288,6 +297,7 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [filterByGeneration, setFilterByGeneration] = useState<number | null>(null);
+  const [deckName, setDeckName] = useState<string>('');
 
   // Check for generation filter in URL params
   useEffect(() => {
@@ -334,6 +344,11 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
         const data = await response.json();
         console.log('Flashcards data received:', data);
         setFlashcards(data.flashcards || []);
+        
+        // Set deck name from first flashcard if available
+        if (data.flashcards && data.flashcards.length > 0 && deckId) {
+          setDeckName(data.flashcards[0].deck_name || '');
+        }
       } catch (error) {
         console.error('Error fetching flashcards:', error);
         toast({
@@ -388,6 +403,36 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
     };
     
     setFlashcards(prev => [flashcard, ...prev]);
+  };
+
+  const handleDeleteDeck = async () => {
+    if (!deckId) return;
+    
+    try {
+      const response = await fetch(`/api/decks?id=${deckId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete deck');
+      }
+
+      toast({
+        title: "Sukces",
+        description: "Talia została usunięta",
+        variant: "success",
+      });
+      
+      // Redirect to all decks view
+      window.location.href = '/flashcards';
+    } catch (error) {
+      console.error('Error deleting deck:', error);
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas usuwania talii",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -447,9 +492,36 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
               )}
             </div>
           </div>
-          <Button onClick={() => setIsAddingNew(true)}>
-            Dodaj nową fiszkę
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setIsAddingNew(true)}>
+              Dodaj nową fiszkę
+            </Button>
+            {deckId && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" aria-label="Usuń talię">
+                    Usuń talię
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Usuń talię</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Czy na pewno chcesz usunąć talię "{deckName || 'tę talię'}"? 
+                      Wszystkie fiszki w tej talii zostaną również usunięte. 
+                      Ta akcja nie może być cofnięta.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteDeck}>
+                      Usuń talię
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </div>
       )}
 

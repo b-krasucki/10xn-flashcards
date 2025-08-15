@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/lib/utils/toast";
 import { OverlayLoader } from "./OverlayLoader";
+import { EditDeckNameDialog } from "./EditDeckNameDialog";
+import { CreateDeckDialog } from "./CreateDeckDialog";
 import { Edit2, Trash2, Plus } from "lucide-react";
 
 interface DeckData {
@@ -40,25 +42,9 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
     window.location.href = `/deck/${deck.id}`;
   };
 
-  const handleEdit = async () => {
-    const newName = prompt('Wprowadź nową nazwę talii:', deck.deck_name);
-    
-    if (newName === null) {
-      // User cancelled
-      return;
-    }
-    
-    if (!newName.trim()) {
-      toast({
-        title: "Błąd",
-        description: "Nazwa talii nie może być pusta",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleEdit = async (newName: string) => {
     try {
-      await onEdit(deck.id, newName.trim());
+      await onEdit(deck.id, newName);
       toast({
         title: "Sukces",
         description: "Nazwa talii została zaktualizowana",
@@ -101,15 +87,19 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
             </CardDescription>
           </div>
           <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              aria-label="Edytuj talię"
-              onClick={handleEdit}
+            <EditDeckNameDialog
+              currentName={deck.deck_name}
+              onSave={handleEdit}
             >
-              <Edit2 className="h-3 w-3" />
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                aria-label="Edytuj talię"
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
+            </EditDeckNameDialog>
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -160,25 +150,9 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
 };
 
 const CreateDeckCard: React.FC<{ onCreate: (name: string) => void }> = ({ onCreate }) => {
-  const handleCreate = async () => {
-    const newName = prompt('Wprowadź nazwę dla nowej talii fiszek:', '');
-    
-    if (newName === null) {
-      // User cancelled
-      return;
-    }
-    
-    if (!newName.trim()) {
-      toast({
-        title: "Błąd",
-        description: "Nazwa talii nie może być pusta",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleCreate = async (name: string) => {
     try {
-      await onCreate(newName.trim());
+      await onCreate(name);
     } catch (error) {
       toast({
         title: "Błąd",
@@ -189,12 +163,14 @@ const CreateDeckCard: React.FC<{ onCreate: (name: string) => void }> = ({ onCrea
   };
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow border-dashed" onClick={handleCreate}>
-      <CardContent className="flex flex-col items-center justify-center h-32">
-        <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground">Dodaj nową talię</p>
-      </CardContent>
-    </Card>
+    <CreateDeckDialog onSave={handleCreate}>
+      <Card className="cursor-pointer hover:shadow-md transition-shadow border-dashed">
+        <CardContent className="flex flex-col items-center justify-center h-32">
+          <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground">Dodaj nową talię</p>
+        </CardContent>
+      </Card>
+    </CreateDeckDialog>
   );
 };
 
