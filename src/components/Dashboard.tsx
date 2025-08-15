@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 interface StatisticsData {
   totalFlashcards: number;
@@ -143,10 +143,11 @@ export const Dashboard: React.FC<DashboardProps> = () => {
             <Button 
               onClick={handleNewGeneration} 
               size="lg" 
-              className="bg-gradient-to-r from-purple-500 to-green-400 hover:from-purple-600 hover:to-green-500 text-white font-semibold"
+              className="shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#00a570] hover:from-[#3a1c63] hover:via-[#703050] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
               aria-label="Rozpocznij generowanie nowych fiszek"
             >
               Nowa generacja
+              <Sparkles className="ml-2 h-5 w-5" />
             </Button>
           </CardContent>
         </Card>
@@ -199,10 +200,11 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           <Button 
             onClick={handleNewGeneration} 
             size="lg" 
-            className="bg-gradient-to-r from-purple-500 to-green-400 hover:from-purple-600 hover:to-green-500 text-white font-semibold"
+            className="shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#00a570] hover:from-[#3a1c63] hover:via-[#703050] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
             aria-label="Rozpocznij generowanie nowych fiszek"
           >
             Nowa generacja
+            <Sparkles className="ml-2 h-5 w-5" />
           </Button>
         </CardContent>
       </Card>
