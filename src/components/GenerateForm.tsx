@@ -32,7 +32,7 @@ interface GenerateViewState {
 const useGenerationForm = () => {
   const [state, setState] = useState<GenerateViewState>({
     sourceText: "",
-    model: "google/gemini-2.5-flash-preview",
+    model: "google/gemini-2.5-flash",
     isLoading: false,
     error: null,
     proposals: null,
@@ -189,7 +189,7 @@ const useGenerationForm = () => {
       console.log("Previous sourceText length:", prevState.sourceText.length);
       const newState = {
         sourceText: "",
-        model: "google/gemini-2.5-flash-preview",
+        model: "google/gemini-2.5-flash",
         isLoading: false,
         error: null,
         proposals: null,

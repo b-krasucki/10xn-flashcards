@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Use a default model or allow the client to specify one
-    const selectedModel = "google/gemini-2.5-flash-preview"; // Use model from request or fallback to default
+    const selectedModel = "google/gemini-2.5-flash"; // Use model from request or fallback to default
 
     const llmService = LLMService.getInstance();
     const deckName = await llmService.generateDeckName(selectedModel, sourceText);

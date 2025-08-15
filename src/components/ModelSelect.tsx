@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 
 const MODEL_OPTIONS = [
-  { value: "google/gemini-2.5-flash-preview", label: "Gemini 2.5 Flash - Preview" },
+  { value: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
   { value: "openai/gpt-4.1-mini", label: "GPT-4.1 Mini" },
   { value: "x-ai/grok-3-mini-beta", label: "Grok 3 Mini Beta" },
   { value: "qwen/qwen3-30b-a3b", label: "Qwen3 30B A3B" },
