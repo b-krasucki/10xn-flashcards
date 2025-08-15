@@ -537,32 +537,32 @@ export const ProposalList = ({
             const isApproved = approvedIndices.has(index);
             const isRejected = rejectedIndices.has(index);
             const isEdited = proposal.source === "ai-edited";
-            const cardBgClass = isRejected ? "bg-red-100" : isApproved ? "bg-green-100" : isEdited ? "bg-blue-50" : "";
+            const cardBgClass = isRejected ? "bg-red-900/20 border-red-400/30" : isApproved ? "bg-green-900/20 border-green-400/30" : isEdited ? "bg-blue-900/20 border-blue-400/30" : "gradient-card";
 
             return (
               <Card key={index} className={cardBgClass}>
                 <CardHeader>
-                  <CardTitle className="text-base">Front</CardTitle>
+                  <CardTitle className="text-base text-white">Front</CardTitle>
                   {isEditing ? (
                     <Input
                       value={editFront}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFront(e.target.value)}
-                      className="mt-1"
+                      className="mt-1 text-white bg-black/20 border-white/20"
                     />
                   ) : (
-                    <CardDescription>{proposal.front}</CardDescription>
+                    <CardDescription className="text-white/80">{proposal.front}</CardDescription>
                   )}
                 </CardHeader>
                 <CardContent>
-                  <CardTitle className="text-base mb-2">Back</CardTitle>
+                  <CardTitle className="text-base mb-2 text-white">Back</CardTitle>
                   {isEditing ? (
                     <Input
                       value={editBack}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditBack(e.target.value)}
-                      className="mt-1"
+                      className="mt-1 text-white bg-black/20 border-white/20"
                     />
                   ) : (
-                    <CardDescription>{proposal.back}</CardDescription>
+                    <CardDescription className="text-white/80">{proposal.back}</CardDescription>
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-2">
@@ -595,7 +595,7 @@ export const ProposalList = ({
                           size="sm"
                           onClick={() => handleApproveClick(index)}
                           disabled={isApproved}
-                          className={`bg-emerald-100 hover:bg-emerald-300 text-emerald-900 disabled:bg-emerald-50 disabled:text-emerald-400 ${isApproved ? "ring-2 ring-emerald-500" : ""}`}
+                          className={`bg-green-600 hover:bg-green-700 text-white disabled:bg-green-800 disabled:text-green-200 ${isApproved ? "ring-2 ring-green-400" : ""}`}
                         >
                           {isApproved ? "Approved" : "Approve"}
                         </Button>
@@ -646,25 +646,25 @@ export const ProposalList = ({
             <AlertDialogDescription className="space-y-2">
               <p>Here are the statistics for your flashcards:</p>
               <div className="mt-4 space-y-2">
-                <div className="flex justify-between items-center bg-green-50 p-2 rounded">
-                  <span>Approved (ai-generated):</span>
-                  <span className="font-semibold">{flashcardStats.approved}</span>
+                <div className="flex justify-between items-center bg-green-900/30 border border-green-400/40 p-2 rounded">
+                  <span className="text-white">Approved (ai-generated):</span>
+                  <span className="font-semibold text-white">{flashcardStats.approved}</span>
                 </div>
-                <div className="flex justify-between items-center bg-blue-50 p-2 rounded">
-                  <span>Edited (ai-edited):</span>
-                  <span className="font-semibold">{flashcardStats.edited}</span>
+                <div className="flex justify-between items-center bg-blue-900/30 border border-blue-400/40 p-2 rounded">
+                  <span className="text-white">Edited (ai-edited):</span>
+                  <span className="font-semibold text-white">{flashcardStats.edited}</span>
                 </div>
-                <div className="flex justify-between items-center bg-red-50 p-2 rounded">
-                  <span>Rejected:</span>
-                  <span className="font-semibold">{flashcardStats.rejected}</span>
+                <div className="flex justify-between items-center bg-red-900/30 border border-red-400/40 p-2 rounded">
+                  <span className="text-white">Rejected:</span>
+                  <span className="font-semibold text-white">{flashcardStats.rejected}</span>
                 </div>
-                <div className="flex justify-between items-center bg-gray-100 p-2 rounded">
-                  <span>Unmarked:</span>
-                  <span className="font-semibold">{flashcardStats.unmarked}</span>
+                <div className="flex justify-between items-center bg-gray-800/40 border border-gray-500/40 p-2 rounded">
+                  <span className="text-white">Unmarked:</span>
+                  <span className="font-semibold text-white">{flashcardStats.unmarked}</span>
                 </div>
-                <div className="flex justify-between items-center bg-gray-50 p-2 rounded border-t-2 border-gray-200 mt-4 pt-4">
-                  <span className="font-medium">Total:</span>
-                  <span className="font-semibold">
+                <div className="flex justify-between items-center bg-gray-700/40 border border-gray-400/50 p-2 rounded border-t-2 mt-4 pt-4">
+                  <span className="font-medium text-white">Total:</span>
+                  <span className="font-semibold text-white">
                     {flashcardStats.approved +
                       flashcardStats.edited +
                       flashcardStats.rejected +

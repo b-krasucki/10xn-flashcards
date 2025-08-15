@@ -24,11 +24,11 @@ export const SourceTextInput = ({ value, onChange, isInvalid = false }: SourceTe
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="sourceText">Source Material</Label>
+      <Label htmlFor="sourceText" className="text-white">Source Material</Label>
       <Textarea
         id="sourceText"
         placeholder="Paste your study materials here (min 1000 characters, max 10000 characters)"
-        className={`min-h-32 ${isInvalid ? "border-red-500" : ""}`}
+        className={`min-h-32 text-white bg-black/20 border-white/20 placeholder:text-white/50 ${isInvalid ? "border-red-400" : ""}`}
         value={value}
         onChange={handleChange}
       />

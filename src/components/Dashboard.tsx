@@ -22,13 +22,13 @@ interface StatisticsData {
 interface DashboardProps {}
 
 const StatisticCard = ({ title, value, description }: { title: string; value: number; description: string }) => (
-  <Card>
+  <Card className="gradient-card">
     <CardHeader className="pb-2">
-      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      <CardTitle className="text-sm font-medium text-white/70">{title}</CardTitle>
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground mt-1">{description}</p>
+      <div className="text-2xl font-bold text-white">{value}</div>
+      <p className="text-xs text-white/60 mt-1">{description}</p>
     </CardContent>
   </Card>
 );
@@ -46,19 +46,19 @@ const RecentGenerationCard = ({ generation }: { generation: StatisticsData["rece
   const displayTitle = generation.deck_name || `Generacja #${generation.id}`;
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleCardClick}>
+    <Card className="gradient-card cursor-pointer transition-all" onClick={handleCardClick}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">{displayTitle}</CardTitle>
-        <CardDescription className="text-xs">
+        <CardTitle className="text-sm text-white">{displayTitle}</CardTitle>
+        <CardDescription className="text-xs text-white/60">
           {new Date(generation.created_at).toLocaleDateString("pl-PL")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium">{generation.generated_count} fiszek</span>
-          <span className="text-xs text-muted-foreground">{generation.model}</span>
+          <span className="text-sm font-medium text-white">{generation.generated_count} fiszek</span>
+          <span className="text-xs text-white/70">{generation.model}</span>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
+        <p className="text-xs text-white/60 mt-2">
           {generation.deck_id 
             ? "Kliknij, aby zobaczyć talię" 
             : "Kliknij, aby zobaczyć fiszki"
@@ -136,11 +136,16 @@ export const Dashboard: React.FC<DashboardProps> = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Szybkie akcje</CardTitle>
-            <CardDescription>Rozpocznij nową sesję generowania fiszek</CardDescription>
+            <CardTitle className="text-white">Szybkie akcje</CardTitle>
+            <CardDescription className="text-white/70">Rozpocznij nową sesję generowania fiszek</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleNewGeneration} size="lg" aria-label="Rozpocznij generowanie nowych fiszek">
+            <Button 
+              onClick={handleNewGeneration} 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-500 to-green-400 hover:from-purple-600 hover:to-green-500 text-white font-semibold"
+              aria-label="Rozpocznij generowanie nowych fiszek"
+            >
               Nowa generacja
             </Button>
           </CardContent>
@@ -185,13 +190,18 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       </div>
 
       {/* Action Section */}
-      <Card>
+      <Card className="gradient-card">
         <CardHeader>
-          <CardTitle>Szybkie akcje</CardTitle>
-          <CardDescription>Rozpocznij nową sesję generowania fiszek</CardDescription>
+          <CardTitle className="text-white">Szybkie akcje</CardTitle>
+          <CardDescription className="text-white/70">Rozpocznij nową sesję generowania fiszek</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleNewGeneration} size="lg" aria-label="Rozpocznij generowanie nowych fiszek">
+          <Button 
+            onClick={handleNewGeneration} 
+            size="lg" 
+            className="bg-gradient-to-r from-purple-500 to-green-400 hover:from-purple-600 hover:to-green-500 text-white font-semibold"
+            aria-label="Rozpocznij generowanie nowych fiszek"
+          >
             Nowa generacja
           </Button>
         </CardContent>
