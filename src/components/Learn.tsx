@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { DeckSelector } from "./DeckSelector";
 import { LearnSession } from "./LearnSession";
 
-interface LearnProps {}
-
-export const Learn: React.FC<LearnProps> = () => {
+export const Learn: React.FC = () => {
   const [selectedDeck, setSelectedDeck] = useState<{
     id: number;
     name: string;
@@ -24,11 +22,5 @@ export const Learn: React.FC<LearnProps> = () => {
   }
 
   // If deck is selected, show the learning session
-  return (
-    <LearnSession
-      deckId={selectedDeck.id}
-      deckName={selectedDeck.name}
-      onBack={handleBackToSelection}
-    />
-  );
+  return <LearnSession deckId={selectedDeck.id} deckName={selectedDeck.name} onBack={handleBackToSelection} />;
 };

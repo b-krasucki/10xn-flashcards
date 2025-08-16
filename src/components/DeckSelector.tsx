@@ -26,22 +26,22 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch('/api/decks');
+        const response = await fetch("/api/decks");
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
           throw new Error(errorData.error || `HTTP ${response.status}`);
         }
 
         const data = await response.json();
-        
+
         // Extract decks array from response and filter out decks with no flashcards
         const decksList = data.decks || [];
         const decksWithFlashcards = decksList.filter((deck: Deck) => deck.flashcard_count > 0);
         setDecks(decksWithFlashcards);
       } catch (err) {
-        console.error('Error fetching decks:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load decks');
+        console.error("Error fetching decks:", err);
+        setError(err instanceof Error ? err.message : "Failed to load decks");
       } finally {
         setIsLoading(false);
       }
@@ -70,9 +70,7 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>
-          Błąd podczas ładowania talii: {error}
-        </AlertDescription>
+        <AlertDescription>Błąd podczas ładowania talii: {error}</AlertDescription>
       </Alert>
     );
   }
@@ -87,9 +85,7 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => window.location.href = '/generate'}>
-            Generuj nowe fiszki
-          </Button>
+          <Button onClick={() => (window.location.href = "/generate")}>Generuj nowe fiszki</Button>
         </CardContent>
       </Card>
     );
@@ -99,14 +95,12 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-semibold mb-2">Wybierz talię do nauki</h2>
-        <p className="text-muted-foreground">
-          Wybierz talię, z której chcesz powtarzać fiszki
-        </p>
+        <p className="text-muted-foreground">Wybierz talię, z której chcesz powtarzać fiszki</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {decks.map((deck) => (
-          <Card 
+          <Card
             key={deck.id}
             className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
             onClick={() => handleDeckSelect(deck)}
@@ -115,9 +109,7 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-2">
                   <Book className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg leading-tight">
-                    {deck.deck_name}
-                  </CardTitle>
+                  <CardTitle className="text-lg leading-tight">{deck.deck_name}</CardTitle>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
@@ -125,16 +117,12 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-primary">
-                    {deck.flashcard_count}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {deck.flashcard_count === 1 ? 'fiszka' : 'fiszek'}
-                  </p>
+                  <p className="text-2xl font-bold text-primary">{deck.flashcard_count}</p>
+                  <p className="text-xs text-muted-foreground">{deck.flashcard_count === 1 ? "fiszka" : "fiszek"}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">
-                    Utworzona {new Date(deck.created_at).toLocaleDateString('pl-PL')}
+                    Utworzona {new Date(deck.created_at).toLocaleDateString("pl-PL")}
                   </p>
                 </div>
               </div>
@@ -144,11 +132,7 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
       </div>
 
       <div className="text-center">
-        <Button 
-          variant="outline" 
-          onClick={() => window.location.href = '/flashcards'}
-          className="mt-4"
-        >
+        <Button variant="outline" onClick={() => (window.location.href = "/flashcards")} className="mt-4">
           Wróć do zarządzania talii
         </Button>
       </div>

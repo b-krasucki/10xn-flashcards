@@ -57,13 +57,13 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
         source: flashcard.source === "ai-full" ? "ai-edited" : flashcard.source,
       });
       setIsEditing(false);
-      
+
       toast({
         title: "Sukces",
         description: "Fiszka została zaktualizowana",
         variant: "success",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas zapisywania fiszki",
@@ -80,10 +80,14 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
 
   const getSourceLabel = (source: string) => {
     switch (source) {
-      case "manual": return "Ręczna";
-      case "ai-full": return "AI";
-      case "ai-edited": return "AI (edytowana)";
-      default: return source;
+      case "manual":
+        return "Ręczna";
+      case "ai-full":
+        return "AI";
+      case "ai-edited":
+        return "AI (edytowana)";
+      default:
+        return source;
     }
   };
 
@@ -94,8 +98,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
           <div className="flex-1">
             <CardTitle className="text-lg">Fiszka #{flashcard.id}</CardTitle>
             <CardDescription>
-              {getSourceLabel(flashcard.source)} • 
-              {flashcard.deck_name && ` ${flashcard.deck_name} • `}
+              {getSourceLabel(flashcard.source)} •{flashcard.deck_name && ` ${flashcard.deck_name} • `}
               {new Date(flashcard.updated_at).toLocaleDateString("pl-PL")}
             </CardDescription>
           </div>
@@ -130,9 +133,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(flashcard.id)}>
-                      Usuń
-                    </AlertDialogAction>
+                    <AlertDialogAction onClick={() => onDelete(flashcard.id)}>Usuń</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -152,9 +153,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
                 placeholder="Pytanie lub termin"
                 maxLength={200}
               />
-              <p className="text-xs text-muted-foreground">
-                {editedFront.length}/200 znaków
-              </p>
+              <p className="text-xs text-muted-foreground">{editedFront.length}/200 znaków</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor={`back-${flashcard.id}`}>Tył fiszki</Label>
@@ -166,9 +165,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
                 rows={4}
                 maxLength={500}
               />
-              <p className="text-xs text-muted-foreground">
-                {editedBack.length}/500 znaków
-              </p>
+              <p className="text-xs text-muted-foreground">{editedBack.length}/500 znaków</p>
             </div>
             <div className="flex space-x-2">
               <Button onClick={handleSaveEdit} size="sm">
@@ -196,13 +193,17 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
   );
 };
 
-const AddFlashcardForm: React.FC<{ onAdd: (flashcard: Omit<FlashcardData, 'id' | 'created_at' | 'updated_at'>) => void; onCancel: () => void; deckId?: string }> = ({ onAdd, onCancel, deckId }) => {
+const AddFlashcardForm: React.FC<{
+  onAdd: (flashcard: Omit<FlashcardData, "id" | "created_at" | "updated_at">) => void;
+  onCancel: () => void;
+  deckId?: string;
+}> = ({ onAdd, onCancel }) => {
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!front.trim() || !back.trim()) {
       toast({
         title: "Błąd",
@@ -218,17 +219,17 @@ const AddFlashcardForm: React.FC<{ onAdd: (flashcard: Omit<FlashcardData, 'id' |
         back: back.trim(),
         source: "manual",
       });
-      
+
       setFront("");
       setBack("");
       onCancel();
-      
+
       toast({
         title: "Sukces",
         description: "Nowa fiszka została dodana",
         variant: "success",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas dodawania fiszki",
@@ -255,9 +256,7 @@ const AddFlashcardForm: React.FC<{ onAdd: (flashcard: Omit<FlashcardData, 'id' |
               maxLength={200}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              {front.length}/200 znaków
-            </p>
+            <p className="text-xs text-muted-foreground">{front.length}/200 znaków</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-back">Tył fiszki</Label>
@@ -270,9 +269,7 @@ const AddFlashcardForm: React.FC<{ onAdd: (flashcard: Omit<FlashcardData, 'id' |
               maxLength={500}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              {back.length}/500 znaków
-            </p>
+            <p className="text-xs text-muted-foreground">{back.length}/500 znaków</p>
           </div>
           <div className="flex space-x-2">
             <Button type="submit" size="sm">
@@ -297,12 +294,12 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [filterByGeneration, setFilterByGeneration] = useState<number | null>(null);
-  const [deckName, setDeckName] = useState<string>('');
+  const [deckName, setDeckName] = useState<string>("");
 
   // Check for generation filter in URL params
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const generationId = urlParams.get('generation');
+    const generationId = urlParams.get("generation");
     if (generationId) {
       setFilterByGeneration(parseInt(generationId, 10));
     }
@@ -313,58 +310,51 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
     const fetchFlashcards = async () => {
       setIsLoading(true);
       try {
-        let url = '/api/flashcards';
+        let url = "/api/flashcards";
         const params = new URLSearchParams();
-        
+
         if (filterByGeneration) {
-          params.append('generation', filterByGeneration.toString());
+          params.append("generation", filterByGeneration.toString());
         }
-        
+
         if (deckId) {
-          params.append('deck', deckId);
+          params.append("deck", deckId);
         }
-        
+
         if (params.toString()) {
           url += `?${params.toString()}`;
         }
-        
-        console.log('Fetching flashcards from:', url);
-        console.log('Filter by generation:', filterByGeneration);
-        console.log('Filter by deck:', deckId);
-        
+
         const response = await fetch(url);
-        console.log('Response status:', response.status);
-        
+
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error('API Error Response:', errorData);
           throw new Error(`Failed to fetch flashcards: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        console.log('Flashcards data received:', data);
         setFlashcards(data.flashcards || []);
-        
+
         // Set deck name from first flashcard if available, or fetch from decks API if empty
         if (data.flashcards && data.flashcards.length > 0 && deckId) {
-          setDeckName(data.flashcards[0].deck_name || '');
+          setDeckName(data.flashcards[0].deck_name || "");
         } else if (deckId && data.flashcards && data.flashcards.length === 0) {
           // If the deck is empty, try to get deck name from decks API
           try {
-            const deckResponse = await fetch('/api/decks');
+            const deckResponse = await fetch("/api/decks");
             if (deckResponse.ok) {
               const deckData = await deckResponse.json();
-              const currentDeck = deckData.decks.find((deck: any) => deck.id === parseInt(deckId, 10));
+              const currentDeck = deckData.decks.find(
+                (deck: { id: number; deck_name: string }) => deck.id === parseInt(deckId, 10)
+              );
               if (currentDeck) {
                 setDeckName(currentDeck.deck_name);
               }
             }
-          } catch (deckError) {
-            console.error('Error fetching deck name:', deckError);
+          } catch {
+            // Error fetching deck name - silently continue
           }
         }
-      } catch (error) {
-        console.error('Error fetching flashcards:', error);
+      } catch {
         toast({
           title: "Błąd",
           description: "Nie udało się pobrać fiszek",
@@ -374,114 +364,142 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
         setIsLoading(false);
       }
     };
-    
+
     fetchFlashcards();
   }, [filterByGeneration, deckId]);
 
   const handleEditFlashcard = async (id: number, updatedData: Partial<FlashcardData>) => {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setFlashcards(prev => 
-      prev.map(flashcard => 
-        flashcard.id === id 
-          ? { ...flashcard, ...updatedData, updated_at: new Date().toISOString() }
-          : flashcard
+    const response = await fetch(`/api/flashcards?id=${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        front: updatedData.front,
+        back: updatedData.back,
+        source: updatedData.source,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update flashcard");
+    }
+
+    const result = await response.json();
+
+    // Update local state with the response data
+    setFlashcards((prev) =>
+      prev.map((flashcard) =>
+        flashcard.id === id ? { ...flashcard, ...updatedData, updated_at: result.flashcard.updated_at } : flashcard
       )
     );
   };
 
   const handleDeleteFlashcard = async (id: number) => {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setFlashcards(prev => prev.filter(flashcard => flashcard.id !== id));
-    
-    toast({
-      title: "Sukces",
-      description: "Fiszka została usunięta",
-      variant: "success",
-    });
-  };
-
-  const handleAddFlashcard = async (newFlashcard: Omit<FlashcardData, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      // If we have a deckId, we need to get the deck name first
-      let deckNameToUse = deckName;
-      
-      if (deckId && !deckNameToUse) {
-        // Fetch deck name from API
-        const deckResponse = await fetch('/api/decks');
-        if (deckResponse.ok) {
-          const deckData = await deckResponse.json();
-          const currentDeck = deckData.decks.find((deck: any) => deck.id === parseInt(deckId, 10));
-          if (currentDeck) {
-            deckNameToUse = currentDeck.deck_name;
-            setDeckName(currentDeck.deck_name);
-          }
-        }
-      }
-      
-      if (!deckNameToUse) {
-        throw new Error('Nie można określić nazwy talii');
-      }
-
-      // Use the existing API endpoint
-      const response = await fetch('/api/flashcards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          deck_name: deckNameToUse,
-          flashcards: [{
-            front: newFlashcard.front,
-            back: newFlashcard.back,
-            source: newFlashcard.source,
-            generation_id: null // Manual flashcards have no generation_id
-          }]
-        }),
+      const response = await fetch(`/api/flashcards?id=${id}`, {
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create flashcard');
+        throw new Error(errorData.error || "Failed to delete flashcard");
       }
 
-      const result = await response.json();
-      
-      // Add the newly created flashcard to our list
-      if (result.flashcards && result.flashcards.length > 0) {
-        const createdFlashcard = result.flashcards[0];
-        const flashcardData: FlashcardData = {
-          id: createdFlashcard.id,
-          front: createdFlashcard.front,
-          back: createdFlashcard.back,
-          source: createdFlashcard.source,
-          deck_name: result.deck.deck_name,
-          created_at: createdFlashcard.created_at,
-          updated_at: createdFlashcard.updated_at,
-        };
-        
-        setFlashcards(prev => [flashcardData, ...prev]);
+      // Update local state - remove the deleted flashcard
+      setFlashcards((prev) => prev.filter((flashcard) => flashcard.id !== id));
+
+      toast({
+        title: "Sukces",
+        description: "Fiszka została usunięta",
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Błąd",
+        description: "Wystąpił błąd podczas usuwania fiszki",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddFlashcard = async (newFlashcard: Omit<FlashcardData, "id" | "created_at" | "updated_at">) => {
+    // If we have a deckId, we need to get the deck name first
+    let deckNameToUse = deckName;
+
+    if (deckId && !deckNameToUse) {
+      // Fetch deck name from API
+      const deckResponse = await fetch("/api/decks");
+      if (deckResponse.ok) {
+        const deckData = await deckResponse.json();
+        const currentDeck = deckData.decks.find(
+          (deck: { id: number; deck_name: string }) => deck.id === parseInt(deckId, 10)
+        );
+        if (currentDeck) {
+          deckNameToUse = currentDeck.deck_name;
+          setDeckName(currentDeck.deck_name);
+        }
       }
-      
-    } catch (error) {
-      console.error('Error adding flashcard:', error);
-      throw error; // Re-throw so the form can handle the error
+    }
+
+    if (!deckNameToUse) {
+      throw new Error("Nie można określić nazwy talii");
+    }
+
+    // Use the existing API endpoint
+    const response = await fetch("/api/flashcards", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        deck_name: deckNameToUse,
+        flashcards: [
+          {
+            front: newFlashcard.front,
+            back: newFlashcard.back,
+            source: newFlashcard.source,
+            generation_id: null, // Manual flashcards have no generation_id
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to create flashcard");
+    }
+
+    const result = await response.json();
+
+    // Add the newly created flashcard to our list
+    if (result.flashcards && result.flashcards.length > 0) {
+      const createdFlashcard = result.flashcards[0];
+      const flashcardData: FlashcardData = {
+        id: createdFlashcard.id,
+        front: createdFlashcard.front,
+        back: createdFlashcard.back,
+        source: createdFlashcard.source,
+        deck_name: result.deck.deck_name,
+        created_at: createdFlashcard.created_at,
+        updated_at: createdFlashcard.updated_at,
+      };
+
+      setFlashcards((prev) => [flashcardData, ...prev]);
     }
   };
 
   const handleDeleteDeck = async () => {
     if (!deckId) return;
-    
+
     try {
       const response = await fetch(`/api/decks?id=${deckId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete deck');
+        throw new Error("Failed to delete deck");
       }
 
       toast({
@@ -489,11 +507,10 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
         description: "Talia została usunięta",
         variant: "success",
       });
-      
+
       // Redirect to all decks view
-      window.location.href = '/flashcards';
-    } catch (error) {
-      console.error('Error deleting deck:', error);
+      window.location.href = "/flashcards";
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas usuwania talii",
@@ -511,16 +528,11 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
       <Card>
         <CardHeader>
           <CardTitle>Brak fiszek</CardTitle>
-          <CardDescription>
-            Nie masz jeszcze żadnych fiszek. Utwórz pierwszą fiszkę lub wygeneruj nowe przy użyciu AI.
-          </CardDescription>
+          <CardDescription>Nie masz jeszcze żadnych fiszek. Utwórz swoją pierwszą fiszkę.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           <Button onClick={() => setIsAddingNew(true)} className="mr-2">
             Dodaj nową fiszkę
-          </Button>
-          <Button onClick={() => window.location.href = '/generate'} variant="outline">
-            Generuj fiszki AI
           </Button>
         </CardContent>
       </Card>
@@ -534,22 +546,22 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-semibold">
-              Twoje fiszki ({flashcards.length})
+              Twoje fiszki <span className="text-muted-foreground">({flashcards.length})</span>
             </h2>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <span>Zarządzaj swoimi fiszkami i taliniami</span>
+              <span>Zarządzaj swoimi fiszkami i taliami</span>
               {filterByGeneration && (
                 <div className="flex items-center gap-2">
                   <span>•</span>
                   <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-xs font-medium">
                     Filtrowane według generacji #{filterByGeneration}
                   </span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       setFilterByGeneration(null);
-                      window.history.replaceState({}, '', '/flashcards');
+                      window.history.replaceState({}, "", "/flashcards");
                     }}
                     className="h-6 px-2 text-xs"
                   >
@@ -560,9 +572,7 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => setIsAddingNew(true)}>
-              Dodaj nową fiszkę
-            </Button>
+            <Button onClick={() => setIsAddingNew(true)}>Dodaj nową fiszkę</Button>
             {deckId && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -574,16 +584,13 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Usuń talię</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Czy na pewno chcesz usunąć talię "{deckName || 'tę talię'}"? 
-                      Wszystkie fiszki w tej talii zostaną również usunięte. 
-                      Ta akcja nie może być cofnięta.
+                      Czy na pewno chcesz usunąć talię &quot;{deckName || "tę talię"}&quot;? Wszystkie fiszki w tej
+                      talii zostaną również usunięte. Ta akcja nie może być cofnięta.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteDeck}>
-                      Usuń talię
-                    </AlertDialogAction>
+                    <AlertDialogAction onClick={handleDeleteDeck}>Usuń talię</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -594,11 +601,7 @@ export const FlashcardsList: React.FC<FlashcardsListProps> = ({ deckId }) => {
 
       {/* Add New Flashcard Form */}
       {isAddingNew && (
-        <AddFlashcardForm 
-          onAdd={handleAddFlashcard}
-          onCancel={() => setIsAddingNew(false)}
-          deckId={deckId}
-        />
+        <AddFlashcardForm onAdd={handleAddFlashcard} onCancel={() => setIsAddingNew(false)} deckId={deckId} />
       )}
 
       {/* Flashcards List */}

@@ -1,6 +1,6 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
-import { Learn } from "../components/Learn";
+import { Learn as LearnComponent } from "../components/Learn";
 
 export const prerender = false;
 ---
@@ -14,7 +14,7 @@ export const prerender = false;
           <p class="text-muted-foreground">Powtarzaj fiszki używając systemu powtórek rozłożonych w czasie</p>
         </div>
       </div>
-      <Learn client:load />
+      <LearnComponent client:load />
     </div>
   </div>
 </MainLayout>

@@ -189,3 +189,142 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   }
 };
+
+export const PUT: APIRoute = async ({ request, url, locals }) => {
+  try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+    
+    const flashcardId = url.searchParams.get("id");
+    
+    if (!flashcardId) {
+      return new Response(JSON.stringify({ error: "Flashcard ID is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const body = await request.json();
+    const { front, back, source } = body;
+
+    if (!front || !back) {
+      return new Response(JSON.stringify({ error: "Front and back content are required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Update the flashcard
+    const { data, error } = await supabase
+      .from("flashcards")
+      .update({ 
+        front: front.trim(),
+        back: back.trim(),
+        source: source || "manual",
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", parseInt(flashcardId, 10))
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating flashcard:", error);
+      return new Response(JSON.stringify({ error: "Failed to update flashcard" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    return new Response(JSON.stringify({ flashcard: data }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+
+  } catch (error) {
+    console.error("API Error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+};
+
+export const DELETE: APIRoute = async ({ url, locals }) => {
+  try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+    
+    const flashcardId = url.searchParams.get("id");
+    
+    if (!flashcardId) {
+      return new Response(JSON.stringify({ error: "Flashcard ID is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Delete the flashcard
+    const { error } = await supabase
+      .from("flashcards")
+      .delete()
+      .eq("id", parseInt(flashcardId, 10))
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error deleting flashcard:", error);
+      return new Response(JSON.stringify({ error: "Failed to delete flashcard" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+
+  } catch (error) {
+    console.error("API Error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+};

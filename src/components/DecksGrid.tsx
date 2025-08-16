@@ -35,7 +35,7 @@ interface DeckCardProps {
 const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on edit/delete buttons
-    if ((e.target as HTMLElement).closest('button')) {
+    if ((e.target as HTMLElement).closest("button")) {
       return;
     }
     // Navigate to deck details with flashcards
@@ -50,7 +50,7 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
         description: "Nazwa talii została zaktualizowana",
         variant: "success",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas edycji talii",
@@ -67,7 +67,7 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
         description: "Talia została usunięta",
         variant: "success",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas usuwania talii",
@@ -87,16 +87,8 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
             </CardDescription>
           </div>
           <div className="flex gap-1">
-            <EditDeckNameDialog
-              currentName={deck.deck_name}
-              onSave={handleEdit}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                aria-label="Edytuj talię"
-              >
+            <EditDeckNameDialog currentName={deck.deck_name} onSave={handleEdit}>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label="Edytuj talię">
                 <Edit2 className="h-3 w-3" />
               </Button>
             </EditDeckNameDialog>
@@ -116,16 +108,13 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Usuń talię</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Czy na pewno chcesz usunąć talię "{deck.deck_name}"? 
-                    Wszystkie fiszki w tej talii zostaną również usunięte. 
-                    Ta akcja nie może być cofnięta.
+                    Czy na pewno chcesz usunąć talię &quot;{deck.deck_name}&quot;? Wszystkie fiszki w tej talii zostaną
+                    również usunięte. Ta akcja nie może być cofnięta.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>
-                    Usuń
-                  </AlertDialogAction>
+                  <AlertDialogAction onClick={handleDelete}>Usuń</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -135,12 +124,10 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
       <CardContent>
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium">
-            {deck.flashcard_count} {deck.flashcard_count === 1 ? 'fiszka' : 'fiszek'}
+            {deck.flashcard_count} {deck.flashcard_count === 1 ? "fiszka" : "fiszek"}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Kliknij, aby zobaczyć fiszki
-        </p>
+        <p className="text-xs text-muted-foreground mt-2">Kliknij, aby zobaczyć fiszki</p>
       </CardContent>
     </Card>
   );
@@ -150,7 +137,7 @@ const CreateDeckCard: React.FC<{ onCreate: (name: string) => void }> = ({ onCrea
   const handleCreate = async (name: string) => {
     try {
       await onCreate(name);
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas tworzenia talii",
@@ -180,19 +167,14 @@ export const DecksGrid: React.FC = () => {
     const fetchDecks = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/decks');
-        
+        const response = await fetch("/api/decks");
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error('API Error Response:', errorData);
           throw new Error(`Failed to fetch decks: ${response.status}`);
         }
-        
         const data = await response.json();
-        console.log('Decks data received:', data);
+        // console.log("Decks data received:", data);
         setDecks(data.decks || []);
-      } catch (error) {
-        console.error('Error fetching decks:', error);
+      } catch {
         toast({
           title: "Błąd",
           description: "Nie udało się pobrać talii",
@@ -202,88 +184,71 @@ export const DecksGrid: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
     fetchDecks();
   }, []);
 
   const handleEditDeck = async (id: number, newName: string) => {
-    try {
-      const response = await fetch(`/api/decks?id=${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ deck_name: newName }),
-      });
+    const response = await fetch(`/api/decks?id=${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ deck_name: newName }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to update deck');
-      }
-
-      // Update local state
-      setDecks(prev => prev.map(deck => 
-        deck.id === id 
-          ? { ...deck, deck_name: newName, updated_at: new Date().toISOString() }
-          : deck
-      ));
-    } catch (error) {
-      console.error('Error updating deck:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error("Failed to update deck");
     }
+
+    // Update local state
+    setDecks((prev) =>
+      prev.map((deck) =>
+        deck.id === id ? { ...deck, deck_name: newName, updated_at: new Date().toISOString() } : deck
+      )
+    );
   };
 
   const handleDeleteDeck = async (id: number) => {
-    try {
-      const response = await fetch(`/api/decks?id=${id}`, {
-        method: 'DELETE',
-      });
+    const response = await fetch(`/api/decks?id=${id}`, {
+      method: "DELETE",
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete deck');
-      }
-
-      // Update local state
-      setDecks(prev => prev.filter(deck => deck.id !== id));
-    } catch (error) {
-      console.error('Error deleting deck:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error("Failed to delete deck");
     }
+
+    // Update local state
+    setDecks((prev) => prev.filter((deck) => deck.id !== id));
   };
 
   const handleCreateDeck = async (name: string) => {
-    try {
-      const response = await fetch('/api/decks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ deck_name: name }),
-      });
+    const response = await fetch("/api/decks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ deck_name: name }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create deck');
-      }
-
-      const data = await response.json();
-      const newDeck = data.deck;
-
-      // Add new deck to local state
-      setDecks(prev => [newDeck, ...prev]);
-
-      toast({
-        title: "Sukces",
-        description: `Talia "${name}" została utworzona`,
-        variant: "success",
-      });
-
-      // Redirect to the new deck's page
-      window.location.href = `/deck/${newDeck.id}`;
-
-    } catch (error) {
-      console.error('Error creating deck:', error);
-      throw error; // Re-throw so CreateDeckDialog can handle it
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to create deck");
     }
+
+    const data = await response.json();
+    const newDeck = data.deck;
+
+    // Add new deck to local state
+    setDecks((prev) => [newDeck, ...prev]);
+
+    toast({
+      title: "Sukces",
+      description: `Talia "${name}" została utworzona`,
+      variant: "success",
+    });
+
+    // Redirect to the new deck's page
+    window.location.href = `/deck/${newDeck.id}`;
   };
 
   if (isLoading) {
@@ -300,13 +265,11 @@ export const DecksGrid: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Button onClick={() => window.location.href = '/generate'} className="mr-2">
+          <Button onClick={() => (window.location.href = "/generate")} className="mr-2">
             Wygeneruj fiszki AI
           </Button>
           <CreateDeckDialog onSave={handleCreateDeck}>
-            <Button variant="outline">
-              Dodaj ręcznie
-            </Button>
+            <Button variant="outline">Dodaj ręcznie</Button>
           </CreateDeckDialog>
         </CardContent>
       </Card>
@@ -318,12 +281,8 @@ export const DecksGrid: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-semibold">
-            Twoje talie ({decks.length})
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Zarządzaj swoimi taliami fiszek
-          </p>
+          <h2 className="text-xl font-semibold">Twoje talie ({decks.length})</h2>
+          <p className="text-muted-foreground text-sm">Zarządzaj swoimi taliami fiszek</p>
         </div>
       </div>
 
@@ -331,12 +290,7 @@ export const DecksGrid: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <CreateDeckCard onCreate={handleCreateDeck} />
         {decks.map((deck) => (
-          <DeckCard
-            key={deck.id}
-            deck={deck}
-            onEdit={handleEditDeck}
-            onDelete={handleDeleteDeck}
-          />
+          <DeckCard key={deck.id} deck={deck} onEdit={handleEditDeck} onDelete={handleDeleteDeck} />
         ))}
       </div>
     </div>
