@@ -8,7 +8,7 @@ interface StatisticsData {
   totalFlashcards: number;
   generatedFlashcards: number;
   editedFlashcards: number;
-  acceptedFlashcards: number;
+  manualFlashcards: number;
   recentGenerations: {
     id: number;
     created_at: string;
@@ -171,11 +171,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           description="Fiszki utworzone przez AI"
         />
         <StatisticCard title="Edytowane" value={statistics.editedFlashcards} description="AI fiszki z modyfikacjami" />
-        <StatisticCard
-          title="Zaakceptowane"
-          value={statistics.acceptedFlashcards}
-          description="Z ostatnich generacji"
-        />
+        <StatisticCard title="Manualne" value={statistics.manualFlashcards} description="Dodane ręcznie przez Ciebie" />
       </div>
 
       {/* Action Section */}

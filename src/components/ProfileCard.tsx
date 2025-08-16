@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,17 +27,58 @@ interface UserProfile {
 }
 
 export const ProfileCard: React.FC = () => {
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    email: "user@example.com",
-    created_at: "2024-01-01T12:00:00Z",
-    total_flashcards: 247,
-    total_generations: 15
-  });
-  
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setIsLoadingProfile(true);
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        
+        if (userError || !user) {
+          toast({
+            title: "Błąd",
+            description: "Nie można pobrać danych użytkownika",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Fetch user statistics
+        const response = await fetch('/api/dashboard');
+        if (!response.ok) {
+          throw new Error('Failed to fetch user stats');
+        }
+        
+        const dashboardData = await response.json();
+        
+        setUserProfile({
+          email: user.email || "Brak adresu e-mail",
+          created_at: user.created_at || new Date().toISOString(),
+          total_flashcards: dashboardData.totalFlashcards || 0,
+          total_generations: dashboardData.recentGenerations?.length || 0
+        });
+        
+      } catch (error) {
+        toast({
+          title: "Błąd",
+          description: "Wystąpił błąd podczas pobierania profilu",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const getInitials = (email: string) => {
     return email.split('@')[0].substring(0, 2).toUpperCase();
@@ -64,8 +105,14 @@ export const ProfileCard: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Update password with Supabase
+      const { error } = await supabaseClient.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
       
       toast({
         title: "Sukces",
@@ -79,7 +126,7 @@ export const ProfileCard: React.FC = () => {
     } catch (error) {
       toast({
         title: "Błąd",
-        description: "Wystąpił błąd podczas zmiany hasła",
+        description: error instanceof Error ? error.message : "Wystąpił błąd podczas zmiany hasła",
         variant: "destructive",
       });
     } finally {
@@ -148,6 +195,33 @@ export const ProfileCard: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  if (isLoadingProfile) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <div className="flex items-center space-x-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+              <span>Ładowanie profilu...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <span>Nie można załadować danych profilu</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

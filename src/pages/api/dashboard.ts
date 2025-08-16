@@ -8,7 +8,7 @@ interface DashboardStats {
   totalFlashcards: number;
   generatedFlashcards: number;
   editedFlashcards: number;
-  acceptedFlashcards: number;
+  manualFlashcards: number;
   recentGenerations: {
     id: number;
     created_at: string;
@@ -49,7 +49,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
       .eq("user_id", userId);
 
     if (totalError) {
-      console.error("Error fetching total flashcards:", totalError);
       throw new Error("Failed to fetch total flashcards");
     }
 
@@ -61,7 +60,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
       .in("source", ["ai-full", "ai-edited"]);
 
     if (generatedError) {
-      console.error("Error fetching generated flashcards:", generatedError);
       throw new Error("Failed to fetch generated flashcards");
     }
 
@@ -73,27 +71,19 @@ export const GET: APIRoute = async ({ locals, request }) => {
       .eq("source", "ai-edited");
 
     if (editedError) {
-      console.error("Error fetching edited flashcards:", editedError);
       throw new Error("Failed to fetch edited flashcards");
     }
 
-    // Get accepted flashcards count from recent generations
-    const { data: acceptedData, error: acceptedError } = await supabase
-      .from("generations")
-      .select("accepted_unedited_count, accepted_edited_count")
+    // Get manual flashcards count (flashcards added manually by user)
+    const { count: manualFlashcards, error: manualError } = await supabase
+      .from("flashcards")
+      .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
-      .not("accepted_unedited_count", "is", null)
-      .not("accepted_edited_count", "is", null);
+      .eq("source", "manual");
 
-    if (acceptedError) {
-      console.error("Error fetching accepted flashcards:", acceptedError);
-      throw new Error("Failed to fetch accepted flashcards");
+    if (manualError) {
+      throw new Error("Failed to fetch manual flashcards");
     }
-
-    const acceptedFlashcards = acceptedData?.reduce(
-      (sum, gen) => sum + (gen.accepted_unedited_count || 0) + (gen.accepted_edited_count || 0),
-      0
-    ) || 0;
 
     // Get recent generations (last 3) with deck names
     const { data: recentGenerationsData, error: recentError } = await supabase
@@ -104,13 +94,24 @@ export const GET: APIRoute = async ({ locals, request }) => {
       .limit(3);
 
     if (recentError) {
-      console.error("Error fetching recent generations:", recentError);
       throw new Error("Failed to fetch recent generations");
     }
 
-    // For each generation, get the deck name and deck_id from the first flashcard
+    // For each generation, get the deck name, deck_id and actual flashcard count
     const recentGenerations = [];
     for (const generation of recentGenerationsData || []) {
+      // Get actual flashcard count for this generation
+      const { count: actualFlashcardCount, error: countError } = await supabase
+        .from('flashcards')
+        .select('*', { count: 'exact', head: true })
+        .eq('generation_id', generation.id)
+        .eq('user_id', userId);
+
+      if (countError) {
+        // Silently handle count error, use 0 as fallback
+      }
+
+      // Get deck info from the first flashcard
       const { data: flashcardData, error: flashcardError } = await supabase
         .from('flashcards')
         .select(`
@@ -129,6 +130,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       
       recentGenerations.push({
         ...generation,
+        generated_count: actualFlashcardCount || 0, // Use actual count instead of stored count
         deck_name,
         deck_id
       });
@@ -138,7 +140,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       totalFlashcards: totalFlashcards || 0,
       generatedFlashcards: generatedFlashcards || 0,
       editedFlashcards: editedFlashcards || 0,
-      acceptedFlashcards,
+      manualFlashcards: manualFlashcards || 0,
       recentGenerations: recentGenerations || [],
     };
 
@@ -149,7 +151,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
       },
     });
   } catch (error) {
-    console.error("Dashboard API error:", error);
     
     return new Response(
       JSON.stringify({
