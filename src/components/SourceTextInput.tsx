@@ -11,23 +11,23 @@ interface SourceTextInputProps {
 }
 
 export const SourceTextInput = ({ value, onChange, isInvalid = false }: SourceTextInputProps) => {
-  // Add logging for prop changes
+  // Track prop changes
   useEffect(() => {
-    console.log(`SourceTextInput: Value prop changed to length ${value.length}`);
+    // Value prop changed tracking
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
-    console.log(`SourceTextInput: Text changed to length ${newText.length}`);
+    // Text change tracking
     onChange(newText);
   };
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="sourceText" className="text-white">Source Material</Label>
+      <Label htmlFor="sourceText" className="text-white">Materiał źródłowy</Label>
       <Textarea
         id="sourceText"
-        placeholder="Paste your study materials here (min 1000 characters, max 10000 characters)"
+        placeholder="Wklej tutaj swoje materiały do nauki (min. 1000 znaków, maks. 10000 znaków)"
         className={`min-h-32 text-white bg-black/20 border-white/20 placeholder:text-white/50 ${isInvalid ? "border-red-400" : ""}`}
         value={value}
         onChange={handleChange}

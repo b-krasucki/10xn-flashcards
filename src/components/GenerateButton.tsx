@@ -13,10 +13,10 @@ export const GenerateButton = ({ onClick, disabled, isLoading }: GenerateButtonP
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Generating...
+          Generowanie...
         </>
       ) : (
-        "Generate Flashcards"
+        "Generuj fiszki"
       )}
     </Button>
   );

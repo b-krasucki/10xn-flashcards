@@ -100,25 +100,25 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard, onEdit, onDele
             </CardDescription>
           </div>
           {!isEditing && (
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
+                className="h-8 w-8 p-0 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105"
                 aria-label="Edytuj fiszkę"
                 onClick={() => setIsEditing(true)}
               >
-                <Edit2 className="h-3 w-3" />
+                <Edit2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                    className="h-8 w-8 p-0 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-105"
                     aria-label="Usuń fiszkę"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

@@ -16,10 +16,10 @@ interface ModelSelectProps {
 export const ModelSelect = ({ value, onChange }: ModelSelectProps) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor="model-select" className="text-white">Choose a model</Label>
+      <Label htmlFor="model-select" className="text-white">Wybierz model</Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger id="model-select" className="w-full text-white border-white/20 bg-black/20">
-          <SelectValue placeholder="Select an AI model" />
+          <SelectValue placeholder="Wybierz model AI" />
         </SelectTrigger>
         <SelectContent className="bg-black/80 border-white/20 backdrop-blur-md">
           {MODEL_OPTIONS.map((option) => (
@@ -35,8 +35,7 @@ export const ModelSelect = ({ value, onChange }: ModelSelectProps) => {
         </SelectContent>
       </Select>
       <p className="text-sm text-white/70">
-        Select the AI model to use for generating flashcards. More powerful models may produce better results but can
-        take longer.
+        Wybierz model AI do generowania fiszek. Bardziej zaawansowane modele mogą dawać lepsze rezultaty, ale działają wolniej.
       </p>
     </div>
   );

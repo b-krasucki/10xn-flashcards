@@ -90,7 +90,7 @@ const useGenerationForm = () => {
 
   const handleTextChange = (text: string) => {
 
-    console.log("Changing text to:", text.substring(0, 50) + (text.length > 50 ? "..." : ""));
+    // Text change tracking
 
     setState((prev) => ({
 
@@ -170,7 +170,7 @@ const useGenerationForm = () => {
 
         const errorData = (await response.json()) as ErrorResponseDto;
 
-        throw new Error(errorData.error || "Failed to generate flashcards");
+        throw new Error(errorData.error || "Nie udało się wygenerować fiszek");
 
       }
 
@@ -186,7 +186,7 @@ const useGenerationForm = () => {
 
         generationId: data.generation_id,
 
-        deckName: data.deckName ?? `Generated Deck ${data.generation_id ?? ""}`.trim(),
+        deckName: data.deckName ?? `Wygenerowana talia ${data.generation_id ?? ""}`.trim(),
 
         isLoading: false,
 
@@ -196,9 +196,9 @@ const useGenerationForm = () => {
 
       toast({
 
-        title: "Success",
+        title: "Sukces",
 
-        description: "Flashcards generated successfully",
+        description: "Fiszki zostały pomyślnie wygenerowane",
 
         variant: "success",
 
@@ -206,7 +206,7 @@ const useGenerationForm = () => {
 
     } catch (error: unknown) {
 
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd";
 
       setState((prev) => ({
 
@@ -222,7 +222,7 @@ const useGenerationForm = () => {
 
       toast({
 
-        title: "Error",
+        title: "Błąd",
 
         description: errorMessage,
 
@@ -240,7 +240,7 @@ const useGenerationForm = () => {
 
     if (!text) {
 
-      console.warn("No source text provided for name regeneration.");
+      // No source text available for name regeneration
 
       return null;
 
@@ -270,7 +270,7 @@ const useGenerationForm = () => {
 
         const errorData = (await response.json()) as ErrorResponseDto;
 
-        throw new Error(errorData.error || "Failed to regenerate deck name");
+        throw new Error(errorData.error || "Nie udało się wygenerować nazwy talii");
 
       }
 
@@ -284,9 +284,9 @@ const useGenerationForm = () => {
 
       toast({
 
-        title: "Success",
+        title: "Sukces",
 
-        description: "Deck name regenerated successfully",
+        description: "Nazwa talii została pomyślnie wygenerowana",
 
         variant: "success",
 
@@ -300,7 +300,7 @@ const useGenerationForm = () => {
 
       const errorMessage =
 
-        error instanceof Error ? error.message : "An unexpected error occurred during name regeneration";
+        error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd podczas generowania nazwy talii";
 
       setState((prev) => ({
 
@@ -316,7 +316,7 @@ const useGenerationForm = () => {
 
       toast({
 
-        title: "Error",
+        title: "Błąd",
 
         description: errorMessage,
 
@@ -364,7 +364,7 @@ const useGenerationForm = () => {
 
   const resetForm = () => {
 
-    console.log("RESETTING FORM STATE");
+    // Resetting form state
 
 
 
@@ -372,7 +372,7 @@ const useGenerationForm = () => {
 
     setState((prevState) => {
 
-      console.log("Previous sourceText length:", prevState.sourceText.length);
+      // Previous sourceText tracking
 
       const newState = {
 
@@ -394,7 +394,7 @@ const useGenerationForm = () => {
 
       };
 
-      console.log("New sourceText length:", newState.sourceText.length);
+      // New sourceText tracking
 
       return newState;
 
@@ -406,7 +406,7 @@ const useGenerationForm = () => {
 
     setTimeout(() => {
 
-      console.log("After reset, state should be cleared");
+      // State cleared after reset
 
     }, 100);
 
@@ -472,11 +472,7 @@ export const GenerateForm = () => {
 
   const handleSaveSuccess = () => {
 
-    console.log("GenerateForm: handleSaveSuccess called");
-
-    // Add a visible console trace to check the call stack
-
-    console.trace("Reset Form Trace");
+    // Handle save success and reset form
 
     resetForm();
 
@@ -499,11 +495,11 @@ export const GenerateForm = () => {
 
           <CardTitle className="text-white">
 
-            Generate New Flashcards {state.generationId ? `(generationID: ${state.generationId})` : ""}
+            Generuj nowe fiszki {state.generationId ? `(ID generacji: ${state.generationId})` : ""}
 
           </CardTitle>
 
-          <CardDescription className="text-white/70">Enter your study materials and let AI create flashcards for you</CardDescription>
+          <CardDescription className="text-white/70">Wprowadź materiały do nauki i pozwól AI utworzyć dla Ciebie fiszki</CardDescription>
 
         </CardHeader>
 

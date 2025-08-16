@@ -137,9 +137,6 @@ const DeckCard: React.FC<DeckCardProps> = ({ deck, onEdit, onDelete }) => {
           <span className="text-sm font-medium">
             {deck.flashcard_count} {deck.flashcard_count === 1 ? 'fiszka' : 'fiszek'}
           </span>
-          <span className="text-xs text-muted-foreground">
-            ID: {deck.id}
-          </span>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
           Kliknij, aby zobaczyć fiszki

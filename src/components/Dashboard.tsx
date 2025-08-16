@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, FileText, Bot, Edit3, User } from "lucide-react";
 
 interface StatisticsData {
   totalFlashcards: number;
@@ -21,17 +21,84 @@ interface StatisticsData {
 
 type DashboardProps = object;
 
-const StatisticCard = ({ title, value, description }: { title: string; value: number; description: string }) => (
-  <Card className="gradient-card">
-    <CardHeader className="pb-2">
-      <CardTitle className="text-sm font-medium text-white/70">{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <p className="text-xs text-white/60 mt-1">{description}</p>
-    </CardContent>
-  </Card>
-);
+interface StatisticCardProps {
+  title: string;
+  value: number;
+  description: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const StatisticCard = ({ title, value, description, color, icon: IconComponent }: StatisticCardProps) => {
+  // Extract color name for dynamic classes
+  const colorName = color.replace("bg-", "").replace("-500", "");
+
+  return (
+    <Card className="gradient-card relative overflow-hidden">
+      {/* Decorative top bar */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${color}`}></div>
+
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-white/70">{title}</CardTitle>
+          <div className={`p-2 rounded-lg ${getIconBackground(colorName)} ${getIconBorder(colorName)}`}>
+            <IconComponent className={`h-4 w-4 ${getIconColor(colorName)}`} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-white">{value}</div>
+        <p className="text-xs text-white/60 mt-1">{description}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Helper functions for consistent color mapping
+const getIconBackground = (colorName: string) => {
+  switch (colorName) {
+    case "blue":
+      return "bg-blue-500/20";
+    case "green":
+      return "bg-green-500/20";
+    case "cyan":
+      return "bg-cyan-500/20";
+    case "yellow":
+      return "bg-yellow-500/20";
+    default:
+      return "bg-gray-500/20";
+  }
+};
+
+const getIconBorder = (colorName: string) => {
+  switch (colorName) {
+    case "blue":
+      return "border border-blue-400/30";
+    case "green":
+      return "border border-green-400/30";
+    case "cyan":
+      return "border border-cyan-400/30";
+    case "yellow":
+      return "border border-yellow-400/30";
+    default:
+      return "border border-gray-400/30";
+  }
+};
+
+const getIconColor = (colorName: string) => {
+  switch (colorName) {
+    case "blue":
+      return "text-blue-400";
+    case "green":
+      return "text-green-400";
+    case "cyan":
+      return "text-cyan-400";
+    case "yellow":
+      return "text-yellow-400";
+    default:
+      return "text-gray-400";
+  }
+};
 
 const RecentGenerationCard = ({ generation }: { generation: StatisticsData["recentGenerations"][0] }) => {
   const handleCardClick = () => {
@@ -164,14 +231,34 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
       {/* Statistics Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatisticCard title="Wszystkie fiszki" value={statistics.totalFlashcards} description="Łączna liczba fiszek" />
+        <StatisticCard
+          title="Wszystkie fiszki"
+          value={statistics.totalFlashcards}
+          description="Łączna liczba fiszek"
+          color="bg-blue-500"
+          icon={FileText}
+        />
         <StatisticCard
           title="Wygenerowane"
           value={statistics.generatedFlashcards}
           description="Fiszki utworzone przez AI"
+          color="bg-green-500"
+          icon={Bot}
         />
-        <StatisticCard title="Edytowane" value={statistics.editedFlashcards} description="AI fiszki z modyfikacjami" />
-        <StatisticCard title="Manualne" value={statistics.manualFlashcards} description="Dodane ręcznie przez Ciebie" />
+        <StatisticCard
+          title="Edytowane"
+          value={statistics.editedFlashcards}
+          description="AI fiszki z modyfikacjami"
+          color="bg-cyan-500"
+          icon={Edit3}
+        />
+        <StatisticCard
+          title="Manualne"
+          value={statistics.manualFlashcards}
+          description="Dodane ręcznie przez Ciebie"
+          color="bg-yellow-500"
+          icon={User}
+        />
       </div>
 
       {/* Action Section */}
