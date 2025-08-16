@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/lib/utils/toast";
 import { OverlayLoader } from "./OverlayLoader";
+import { supabaseClient } from "@/db/supabase.client";
 
 interface UserProfile {
   email: string;
@@ -116,8 +117,16 @@ export const ProfileCard: React.FC = () => {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Sign out with Supabase
+      const { error } = await supabaseClient.auth.signOut();
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Clear session cookies
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
       
       toast({
         title: "Wylogowano",

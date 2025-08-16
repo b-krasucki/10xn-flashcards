@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro";
 import { createGenerationSchema } from "../../lib/schemas/generation.schema";
 import { LLMService, LLMError } from "../../lib/services/llmService";
-import { DEFAULT_USER_ID } from "../../db/supabase.client";
 import type { SupabaseClient } from "../../db/supabase.client";
 import crypto from "crypto";
 
@@ -11,7 +10,29 @@ export const prerender = false;
  * POST /generations - Inicjuje generowanie fiszek z tekstu źródłowego
  */
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Get Supabase client from middleware
+  const supabase = locals.supabase;
+  if (!supabase) {
+    throw new Error("Supabase client not available");
+  }
+
+  // Get user from session
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { 
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
+  }
+
+  const userId = user.id;
+
   try {
+
     // Parsowanie i walidacja body żądania
     const body = await request.json();
     const validationResult = createGenerationSchema.safeParse(body);
@@ -51,7 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { data: generation, error: dbError } = await (locals.supabase as SupabaseClient)
       .from("generations")
       .insert({
-        user_id: DEFAULT_USER_ID,
+        user_id: userId,
         model,
         generated_count: proposals.length,
         source_text_hash,
@@ -91,7 +112,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Logowanie błędu LLM
     if (error instanceof LLMError) {
       await (locals.supabase as SupabaseClient).from("generation_error_logs").insert({
-        user_id: DEFAULT_USER_ID,
+        user_id: userId,
         model: "unknown",
         source_text_hash: "",
         source_text_lenght: 0,

@@ -75,6 +75,15 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         return;
       }
 
+      // For login, set session cookies
+      if (isLogin && result.data.session) {
+        const { access_token, refresh_token } = result.data.session;
+        
+        // Set cookies for session persistence
+        document.cookie = `sb-access-token=${encodeURIComponent(access_token)}; path=/; max-age=3600; SameSite=Strict; Secure`;
+        document.cookie = `sb-refresh-token=${encodeURIComponent(refresh_token)}; path=/; max-age=604800; SameSite=Strict; Secure`;
+      }
+
       toast({
         title: "Sukces",
         description: isLogin ? "Zalogowano pomyślnie" : "Konto zostało utworzone",

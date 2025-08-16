@@ -1,8 +1,27 @@
 import type { APIRoute } from "astro";
 import { LLMService, LLMError } from "@/lib/services/llmService";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
     const body = await request.json();
     const { sourceText } = body;
 

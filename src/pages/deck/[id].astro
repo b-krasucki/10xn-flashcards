@@ -16,7 +16,10 @@ const { id } = Astro.params;
           <p class="text-muted-foreground">Przeglądaj i edytuj fiszki w tej talii</p>
         </div>
         <div class="flex gap-2">
-          <a href="/flashcards" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+          <a
+            href="/flashcards"
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border bg-background shadow-xs hover:bg-background/60 dark:bg-input/30 dark:border-input h-10 px-4 py-2"
+          >
             ← Powrót do talii
           </a>
         </div>

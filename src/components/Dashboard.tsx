@@ -19,7 +19,7 @@ interface StatisticsData {
   }[];
 }
 
-interface DashboardProps {}
+type DashboardProps = object;
 
 const StatisticCard = ({ title, value, description }: { title: string; value: number; description: string }) => (
   <Card className="gradient-card">
@@ -59,10 +59,7 @@ const RecentGenerationCard = ({ generation }: { generation: StatisticsData["rece
           <span className="text-xs text-white/70">{generation.model}</span>
         </div>
         <p className="text-xs text-white/60 mt-2">
-          {generation.deck_id 
-            ? "Kliknij, aby zobaczyć talię" 
-            : "Kliknij, aby zobaczyć fiszki"
-          }
+          {generation.deck_id ? "Kliknij, aby zobaczyć talię" : "Kliknij, aby zobaczyć fiszki"}
         </p>
       </CardContent>
     </Card>
@@ -71,7 +68,7 @@ const RecentGenerationCard = ({ generation }: { generation: StatisticsData["rece
 
 export const Dashboard: React.FC<DashboardProps> = () => {
   const handleNewGeneration = () => {
-    window.location.href = '/generate';
+    window.location.href = "/generate";
   };
   const [statistics, setStatistics] = useState<StatisticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,19 +79,18 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       try {
         setIsLoading(true);
         setError(null);
-        
-        const response = await fetch('/api/dashboard');
-        
+
+        const response = await fetch("/api/dashboard");
+
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
           throw new Error(errorData.error || `HTTP ${response.status}`);
         }
-        
+
         const data = await response.json();
         setStatistics(data);
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
       } finally {
         setIsLoading(false);
       }
@@ -110,7 +106,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">Przegląd Twoich fiszek i ostatnich aktywności</p>
         </div>
-        
+
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center space-x-2">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -128,21 +124,21 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">Przegląd Twoich fiszek i ostatnich aktywności</p>
         </div>
-        
+
         <Alert variant="destructive">
           <h3>Błąd podczas ładowania danych</h3>
           <p>{error}</p>
         </Alert>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="text-white">Szybkie akcje</CardTitle>
             <CardDescription className="text-white/70">Rozpocznij nową sesję generowania fiszek</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              onClick={handleNewGeneration} 
-              size="lg" 
+            <Button
+              onClick={handleNewGeneration}
+              size="lg"
               className="shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#00a570] hover:from-[#3a1c63] hover:via-[#703050] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
               aria-label="Rozpocznij generowanie nowych fiszek"
             >
@@ -168,21 +164,13 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
       {/* Statistics Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatisticCard
-          title="Wszystkie fiszki"
-          value={statistics.totalFlashcards}
-          description="Łączna liczba fiszek"
-        />
+        <StatisticCard title="Wszystkie fiszki" value={statistics.totalFlashcards} description="Łączna liczba fiszek" />
         <StatisticCard
           title="Wygenerowane"
           value={statistics.generatedFlashcards}
           description="Fiszki utworzone przez AI"
         />
-        <StatisticCard
-          title="Edytowane"
-          value={statistics.editedFlashcards}
-          description="AI fiszki z modyfikacjami"
-        />
+        <StatisticCard title="Edytowane" value={statistics.editedFlashcards} description="AI fiszki z modyfikacjami" />
         <StatisticCard
           title="Zaakceptowane"
           value={statistics.acceptedFlashcards}
@@ -197,10 +185,10 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           <CardDescription className="text-white/70">Rozpocznij nową sesję generowania fiszek</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            onClick={handleNewGeneration} 
-            size="lg" 
-            className="shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#00a570] hover:from-[#3a1c63] hover:via-[#703050] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
+          <Button
+            onClick={handleNewGeneration}
+            size="lg"
+            className="shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#01583d] hover:from-[#3a1c63] hover:via-[#703050] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
             aria-label="Rozpocznij generowanie nowych fiszek"
           >
             Nowa generacja

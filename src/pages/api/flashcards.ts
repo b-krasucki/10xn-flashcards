@@ -7,25 +7,32 @@ import type { Database } from "../../db/database.types";
 
 export const prerender = false;
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
-const testUserId = import.meta.env.TEST_USER;
-
-if (!supabaseUrl || !supabaseAnonKey || !testUserId) {
-  throw new Error("Missing required environment variables (SUPABASE_URL, SUPABASE_ANON_KEY, or TEST_USER)");
-}
-
-const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
-
-// Initialize service
-const flashcardsService = new FlashcardsService(supabase);
-
-export const GET: APIRoute = async ({ url }) => {
-  // Using test user ID from environment variables
-  const userId = testUserId;
-
+export const GET: APIRoute = async ({ url, locals }) => {
   try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+    
+    // Initialize service
+    const flashcardsService = new FlashcardsService(supabase);
+
     // Get query parameters
     const generationId = url.searchParams.get('generation');
     const deckId = url.searchParams.get('deck');
@@ -96,36 +103,57 @@ export const GET: APIRoute = async ({ url }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  // Using test user ID from environment variables
-  const userId = testUserId;
-
-  // 1. Parse and validate JSON
-  let commandDto: CreateFlashcardsCommandDto;
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const body = await request.json();
-    const validationResult = createFlashcardsSchema.safeParse(body);
-    if (!validationResult.success) {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return new Response(
-        JSON.stringify({
-          error: "Invalid request body",
-          details: validationResult.error.flatten(),
-        } as ErrorResponseDto),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
         }
       );
     }
-    commandDto = validationResult.data;
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON format" } as ErrorResponseDto), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
 
-  try {
+    const userId = user.id;
+    
+    // Initialize service
+    const flashcardsService = new FlashcardsService(supabase);
+
+    // 1. Parse and validate JSON
+    let commandDto: CreateFlashcardsCommandDto;
+    try {
+      const body = await request.json();
+      const validationResult = createFlashcardsSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(
+          JSON.stringify({
+            error: "Invalid request body",
+            details: validationResult.error.flatten(),
+          } as ErrorResponseDto),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+      commandDto = validationResult.data;
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON format" } as ErrorResponseDto), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // 3. Call service to create flashcards
     const result = await flashcardsService.createFlashcards(userId, commandDto.deck_name, commandDto.flashcards);
 

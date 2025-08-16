@@ -4,24 +4,34 @@ import type { Database } from '../../db/database.types';
 
 export const prerender = false;
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
-const testUserId = import.meta.env.TEST_USER;
-
-if (!supabaseUrl || !supabaseAnonKey || !testUserId) {
-  throw new Error("Missing required environment variables (SUPABASE_URL, SUPABASE_ANON_KEY, or TEST_USER)");
-}
-
-const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
-
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ locals }) => {
   try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+
     // Get all decks for the user
     const { data: decks, error } = await supabase
       .from('flashcards_deck_names')
       .select('id, deck_name, created_at, updated_at')
-      .eq('user_id', testUserId)
+      .eq('user_id', userId)
       .order('updated_at', { ascending: false });
 
     if (error) {
@@ -39,7 +49,7 @@ export const GET: APIRoute = async () => {
         .from('flashcards')
         .select('*', { count: 'exact', head: true })
         .eq('deck_name_id', deck.id)
-        .eq('user_id', testUserId);
+        .eq('user_id', userId);
 
       transformedDecks.push({
         id: deck.id,
@@ -67,8 +77,29 @@ export const GET: APIRoute = async () => {
   }
 };
 
-export const DELETE: APIRoute = async ({ url }) => {
+export const DELETE: APIRoute = async ({ url, locals }) => {
   try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+    
     const deckId = url.searchParams.get('id');
     
     if (!deckId) {
@@ -83,7 +114,7 @@ export const DELETE: APIRoute = async ({ url }) => {
       .from('flashcards')
       .delete()
       .eq('deck_name_id', parseInt(deckId, 10))
-      .eq('user_id', testUserId);
+      .eq('user_id', userId);
 
     if (flashcardsError) {
       console.error('Error deleting flashcards:', flashcardsError);
@@ -98,7 +129,7 @@ export const DELETE: APIRoute = async ({ url }) => {
       .from('flashcards_deck_names')
       .delete()
       .eq('id', parseInt(deckId, 10))
-      .eq('user_id', testUserId);
+      .eq('user_id', userId);
 
     if (deckError) {
       console.error('Error deleting deck:', deckError);
@@ -122,8 +153,29 @@ export const DELETE: APIRoute = async ({ url }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+    
     const body = await request.json();
     const { deck_name } = body;
 
@@ -139,7 +191,7 @@ export const POST: APIRoute = async ({ request }) => {
       .from('flashcards_deck_names')
       .insert({
         deck_name: deck_name.trim(),
-        user_id: testUserId,
+        user_id: userId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -176,8 +228,29 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const PUT: APIRoute = async ({ request, url }) => {
+export const PUT: APIRoute = async ({ request, url, locals }) => {
   try {
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
+    }
+
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
+    
     const deckId = url.searchParams.get('id');
     
     if (!deckId) {
@@ -205,7 +278,7 @@ export const PUT: APIRoute = async ({ request, url }) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', parseInt(deckId, 10))
-      .eq('user_id', testUserId)
+      .eq('user_id', userId)
       .select()
       .single();
 

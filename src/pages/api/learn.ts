@@ -33,16 +33,26 @@ export const GET: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Initialize Supabase client (same way as in other API endpoints)
-    const supabaseUrl = import.meta.env.SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
-    const testUserId = import.meta.env.TEST_USER;
-
-    if (!supabaseUrl || !supabaseAnonKey || !testUserId) {
-      throw new Error("Missing required environment variables");
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
     }
 
-    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
 
     // Get flashcards for learning from the specific deck using spaced repetition algorithm
     
@@ -62,7 +72,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
           deck_name
         )
       `)
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .eq("deck_name_id", deckId)
       .order("next_review_date", { ascending: true, nullsFirst: true }); // Priority to cards due for review
     
@@ -161,16 +171,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = import.meta.env.SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
-    const testUserId = import.meta.env.TEST_USER;
-
-    if (!supabaseUrl || !supabaseAnonKey || !testUserId) {
-      throw new Error("Missing required environment variables");
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
     }
 
-    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
 
     // Validate difficulty range
     if (difficulty < 1 || difficulty > 5) {
@@ -192,7 +212,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .from("flashcards")
       .select("id, ease_factor, review_count, last_reviewed_at")
       .eq("id", flashcardId)
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .single();
 
     if (fetchError || !currentCard) {
@@ -228,7 +248,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         ease_factor: spacedRepetitionResult.easeFactor,
       })
       .eq("id", flashcardId)
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .select();
 
     if (error) {

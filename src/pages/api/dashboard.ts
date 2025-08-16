@@ -19,24 +19,34 @@ interface DashboardStats {
   }[];
 }
 
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, request }) => {
   try {
-    // Initialize Supabase client (same way as in other API endpoints)
-    const supabaseUrl = import.meta.env.SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
-    const testUserId = import.meta.env.TEST_USER;
-
-    if (!supabaseUrl || !supabaseAnonKey || !testUserId) {
-      throw new Error("Missing required environment variables");
+    // Get Supabase client from middleware
+    const supabase = locals.supabase;
+    if (!supabase) {
+      throw new Error("Supabase client not available");
     }
 
-    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+    // Get user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { 
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const userId = user.id;
 
     // Get total flashcards count
     const { count: totalFlashcards, error: totalError } = await supabase
       .from("flashcards")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", testUserId);
+      .eq("user_id", userId);
 
     if (totalError) {
       console.error("Error fetching total flashcards:", totalError);
@@ -47,7 +57,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { count: generatedFlashcards, error: generatedError } = await supabase
       .from("flashcards")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .in("source", ["ai-full", "ai-edited"]);
 
     if (generatedError) {
@@ -59,7 +69,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { count: editedFlashcards, error: editedError } = await supabase
       .from("flashcards")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .eq("source", "ai-edited");
 
     if (editedError) {
@@ -71,7 +81,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data: acceptedData, error: acceptedError } = await supabase
       .from("generations")
       .select("accepted_unedited_count, accepted_edited_count")
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .not("accepted_unedited_count", "is", null)
       .not("accepted_edited_count", "is", null);
 
@@ -89,7 +99,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data: recentGenerationsData, error: recentError } = await supabase
       .from("generations")
       .select("id, created_at, generated_count, model")
-      .eq("user_id", testUserId)
+      .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(3);
 
@@ -110,7 +120,7 @@ export const GET: APIRoute = async ({ locals }) => {
           )
         `)
         .eq('generation_id', generation.id)
-        .eq('user_id', testUserId)
+        .eq('user_id', userId)
         .limit(1)
         .single();
 
