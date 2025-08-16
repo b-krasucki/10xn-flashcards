@@ -5,14 +5,51 @@ import { FlashcardsList } from "../../components/FlashcardsList";
 export const prerender = false;
 
 const { id } = Astro.params;
+
+// Fetch deck name for the title
+let deckName = "";
+try {
+  const supabase = Astro.locals.supabase;
+  if (supabase && id) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (!userError && user) {
+      const { data: deck, error: deckError } = await supabase
+        .from("flashcards_deck_names")
+        .select("deck_name")
+        .eq("id", parseInt(id, 10))
+        .eq("user_id", user.id)
+        .single();
+
+      if (!deckError && deck) {
+        deckName = deck.deck_name;
+      }
+    }
+  }
+} catch {
+  // Error handling - deck name will remain empty string
+}
 ---
 
-<MainLayout title="Fiszki talii">
+<MainLayout title={deckName ? `Fiszki talii: ${deckName}` : "Fiszki talii"}>
   <div class="container mx-auto px-4 py-8">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight">Fiszki talii</h1>
+          <h1 class="text-3xl font-bold tracking-tight">
+            {
+              deckName ? (
+                <>
+                  Fiszki talii: <span class="text-[#d1b6dd] dark:text-purple-400">{deckName}</span>
+                </>
+              ) : (
+                "Fiszki talii"
+              )
+            }
+          </h1>
           <p class="text-muted-foreground">Przeglądaj i edytuj fiszki w tej talii</p>
         </div>
         <div class="flex gap-2">

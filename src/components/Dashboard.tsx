@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { Loader2, Sparkles, FileText, Bot, Edit3, User } from "lucide-react";
+import { Loader2, Sparkles, FileText, Bot, Edit3, User, GraduationCap } from "lucide-react";
 
 interface StatisticsData {
   totalFlashcards: number;
@@ -137,6 +137,10 @@ export const Dashboard: React.FC<DashboardProps> = () => {
   const handleNewGeneration = () => {
     window.location.href = "/generate";
   };
+
+  const handleLearnSession = () => {
+    window.location.href = "/learn";
+  };
   const [statistics, setStatistics] = useState<StatisticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -265,17 +269,28 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       <Card className="gradient-card">
         <CardHeader>
           <CardTitle className="text-white">Szybkie akcje</CardTitle>
-          <CardDescription className="text-white/70">Rozpocznij nową sesję generowania fiszek</CardDescription>
+          <CardDescription className="text-white/70">
+            Rozpocznij nową sesję generowania fiszek lub naukę
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex gap-3">
           <Button
             onClick={handleNewGeneration}
             size="lg"
-            className="shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#01583d] hover:from-[#3a1c63] hover:via-[#703050] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
+            className="flex-1 cursor-pointer shimmer-button bg-gradient-to-r from-[#4a2c73] via-[#804060] to-[#01583d] hover:via-[#b85184] hover:to-[#008560] text-white font-semibold shadow-lg transition-all duration-300 ease-out"
             aria-label="Rozpocznij generowanie nowych fiszek"
           >
             Nowa generacja
             <Sparkles className="ml-2 h-5 w-5" />
+          </Button>
+          <Button
+            onClick={handleLearnSession}
+            size="lg"
+            className="flex-1 cursor-pointer bg-gradient-to-r from-[#089e56] via-[#625668] to-[#b36a0a] text-white font-semibold shadow-lg hover:via-[#b36a0a] hover:to-[#008560] transition-all duration-300 ease-out"
+            aria-label="Rozpocznij sesję powtórek"
+          >
+            Sesja powtórek
+            <GraduationCap className="ml-2 h-5 w-5" />
           </Button>
         </CardContent>
       </Card>

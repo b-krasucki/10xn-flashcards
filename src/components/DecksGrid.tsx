@@ -303,9 +303,11 @@ export const DecksGrid: React.FC = () => {
           <Button onClick={() => window.location.href = '/generate'} className="mr-2">
             Wygeneruj fiszki AI
           </Button>
-          <Button onClick={() => window.location.href = '/flashcards/add'} variant="outline">
-            Dodaj ręcznie
-          </Button>
+          <CreateDeckDialog onSave={handleCreateDeck}>
+            <Button variant="outline">
+              Dodaj ręcznie
+            </Button>
+          </CreateDeckDialog>
         </CardContent>
       </Card>
     );
