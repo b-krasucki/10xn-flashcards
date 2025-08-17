@@ -40,6 +40,16 @@ A flashcards application that helps users quickly create, manage, and learn from
 
 - Openrouter.ai for interfacing with multiple language models (e.g., OpenAI, Anthropic, Google)
 
+**Testing:**
+
+- Vitest for unit testing framework with TypeScript/React support
+- React Testing Library for component testing
+- MSW (Mock Service Worker) for API mocking
+- Playwright for end-to-end testing and browser automation
+- Lighthouse for performance auditing
+- k6 for load testing API
+- OWASP ZAP for security vulnerability scanning
+
 **CI/CD & Hosting:**
 
 - GitHub Actions for pipeline automation
