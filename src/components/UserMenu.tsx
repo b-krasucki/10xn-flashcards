@@ -16,27 +16,27 @@ export const UserMenu: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        console.log('UserMenu: Fetching user data...');
-        
-        const response = await fetch('/api/user');
-        
+        console.log("UserMenu: Fetching user data...");
+
+        const response = await fetch("/api/user");
+
         if (!response.ok) {
           if (response.status === 401) {
             // User not authenticated - this is normal for UserMenu
-            console.log('UserMenu: User not authenticated');
+            console.log("UserMenu: User not authenticated");
             return;
           }
           throw new Error(`Failed to fetch user data: ${response.status}`);
         }
-        
+
         const userData = await response.json();
-        console.log('UserMenu: User data received', userData);
-        
+        console.log("UserMenu: User data received", userData);
+
         setUserData({
-          email: userData.email || "user@example.com"
+          email: userData.email || "user@example.com",
         });
       } catch (error) {
-        console.error('UserMenu: Error fetching user data:', error);
+        console.error("UserMenu: Error fetching user data:", error);
         // Silent error handling - UserMenu should gracefully handle auth errors
       } finally {
         setIsLoading(false);
@@ -47,30 +47,30 @@ export const UserMenu: React.FC = () => {
   }, []);
 
   const getInitials = (email: string) => {
-    return email.split('@')[0].substring(0, 2).toUpperCase();
+    return email.split("@")[0].substring(0, 2).toUpperCase();
   };
 
   const handleLogout = async () => {
     try {
       const { error } = await supabaseClient.auth.signOut();
-      
+
       if (error) {
         throw new Error(error.message);
       }
-      
+
       // Clear session cookies
-      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
-      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
-      
+      document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
+      document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
+
       toast({
         title: "Wylogowano",
         description: "Zostałeś pomyślnie wylogowany",
         variant: "success",
       });
-      
+
       // Redirect to auth page
       setTimeout(() => {
-        window.location.href = '/auth';
+        window.location.href = "/auth";
       }, 1000);
     } catch (error) {
       toast({
@@ -82,7 +82,7 @@ export const UserMenu: React.FC = () => {
   };
 
   const handleProfileClick = () => {
-    window.location.href = '/profile';
+    window.location.href = "/profile";
   };
 
   if (isLoading) {
@@ -101,8 +101,8 @@ export const UserMenu: React.FC = () => {
   return (
     <div className="flex items-center space-x-3">
       {/* User Avatar with Profile Link */}
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         className="relative h-8 w-8 rounded-full p-0 hover:bg-white/10 cursor-pointer"
         onClick={handleProfileClick}
         title={`Profil użytkownika: ${userData.email}`}
@@ -116,8 +116,8 @@ export const UserMenu: React.FC = () => {
       </Button>
 
       {/* Logout Button */}
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         size="sm"
         onClick={handleLogout}
         className="text-white hover:bg-white/10 hover:text-white cursor-pointer"

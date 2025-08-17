@@ -1,7 +1,7 @@
 /**
  * Spaced Repetition Algorithm Implementation (SM-2)
  * Based on the SM-2 algorithm by Piotr Wozniak
- * 
+ *
  * Difficulty levels mapping:
  * 1 = Very Easy (perfect response)
  * 2 = Easy (correct response with hesitation)
@@ -29,13 +29,10 @@ export interface FlashcardReviewData {
  * @param currentData Current flashcard review data
  * @returns Updated spaced repetition data
  */
-export function calculateNextReview(
-  difficulty: number,
-  currentData: FlashcardReviewData
-): SpacedRepetitionResult {
+export function calculateNextReview(difficulty: number, currentData: FlashcardReviewData): SpacedRepetitionResult {
   // Validate input
   if (difficulty < 1 || difficulty > 5) {
-    throw new Error('Difficulty must be between 1 and 5');
+    throw new Error("Difficulty must be between 1 and 5");
   }
 
   let { easeFactor, reviewCount } = currentData;
@@ -44,10 +41,10 @@ export function calculateNextReview(
   // SM-2 algorithm: Update ease factor based on difficulty
   // quality in SM-2 is 0-5, but we use 1-5, so we need to adjust
   const quality = 6 - difficulty; // Convert to SM-2 quality (5=easiest, 1=hardest)
-  
+
   // Calculate new ease factor
   let newEaseFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-  
+
   // Ensure ease factor doesn't go below 1.3
   if (newEaseFactor < 1.3) {
     newEaseFactor = 1.3;
@@ -80,7 +77,7 @@ export function calculateNextReview(
     nextReviewDate,
     easeFactor: Math.round(newEaseFactor * 100) / 100, // Round to 2 decimal places
     reviewCount: newReviewCount,
-    interval
+    interval,
   };
 }
 
@@ -91,7 +88,7 @@ export function calculateNextReview(
 function calculatePreviousInterval(reviewCount: number, easeFactor: number): number {
   if (reviewCount === 1) return 1;
   if (reviewCount === 2) return 6;
-  
+
   // For review count > 2, work backwards
   let interval = 6;
   for (let i = 3; i <= reviewCount; i++) {
@@ -121,7 +118,7 @@ export function getCardsDueForReview<T extends { next_review_date: string | null
   flashcards: T[],
   currentDate: Date = new Date()
 ): T[] {
-  return flashcards.filter(card => {
+  return flashcards.filter((card) => {
     const nextReviewDate = card.next_review_date ? new Date(card.next_review_date) : null;
     return isCardDue(nextReviewDate, currentDate);
   });
@@ -132,13 +129,13 @@ export function getCardsDueForReview<T extends { next_review_date: string | null
  */
 export function difficultyToText(difficulty: number): string {
   const difficultyMap: Record<number, string> = {
-    1: 'Bardzo łatwo',
-    2: 'Łatwo', 
-    3: 'Średnio',
-    4: 'Trudno',
-    5: 'Bardzo trudno'
+    1: "Bardzo łatwo",
+    2: "Łatwo",
+    3: "Średnio",
+    4: "Trudno",
+    5: "Bardzo trudno",
   };
-  return difficultyMap[difficulty] || 'Nieznane';
+  return difficultyMap[difficulty] || "Nieznane";
 }
 
 /**

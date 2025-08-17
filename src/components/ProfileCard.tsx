@@ -38,27 +38,26 @@ export const ProfileCard: React.FC = () => {
     const fetchUserProfile = async () => {
       try {
         setIsLoadingProfile(true);
-        
-        console.log('ProfileCard: Fetching profile data...');
+
+        console.log("ProfileCard: Fetching profile data...");
 
         // Fetch user profile data from API (includes user info and statistics)
-        const response = await fetch('/api/profile');
+        const response = await fetch("/api/profile");
         if (!response.ok) {
           const errorData = await response.text();
-          console.error('Profile API error:', response.status, errorData);
+          console.error("Profile API error:", response.status, errorData);
           throw new Error(`Failed to fetch profile data: ${response.status} ${errorData}`);
         }
-        
+
         const profileData = await response.json();
-        console.log('Profile data received:', profileData);
-        
+        console.log("Profile data received:", profileData);
+
         setUserProfile(profileData);
-        
       } catch (error) {
-        console.error('ProfileCard fetch error:', error);
+        console.error("ProfileCard fetch error:", error);
         toast({
           title: "Błąd",
-          description: `Wystąpił błąd podczas pobierania profilu: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          description: `Wystąpił błąd podczas pobierania profilu: ${error instanceof Error ? error.message : "Unknown error"}`,
           variant: "destructive",
         });
       } finally {
@@ -70,7 +69,7 @@ export const ProfileCard: React.FC = () => {
   }, []);
 
   const getInitials = (email: string) => {
-    return email.split('@')[0].substring(0, 2).toUpperCase();
+    return email.split("@")[0].substring(0, 2).toUpperCase();
   };
 
   const handleChangePassword = async () => {
@@ -96,19 +95,19 @@ export const ProfileCard: React.FC = () => {
     try {
       // Update password with Supabase
       const { error } = await supabaseClient.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
-      
+
       if (error) {
         throw new Error(error.message);
       }
-      
+
       toast({
         title: "Sukces",
         description: "Hasło zostało zmienione",
         variant: "success",
       });
-      
+
       setNewPassword("");
       setConfirmPassword("");
       setIsChangingPassword(false);
@@ -127,35 +126,35 @@ export const ProfileCard: React.FC = () => {
     setIsLoading(true);
     try {
       // Call real API to delete account
-      const response = await fetch('/api/deleteAccount', {
-        method: 'DELETE',
+      const response = await fetch("/api/deleteAccount", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete account');
+        throw new Error(data.error || "Failed to delete account");
       }
-      
+
       toast({
         title: "Konto usunięte",
         description: "Twoje konto zostało trwale usunięte wraz ze wszystkimi danymi",
         variant: "success",
       });
-      
+
       // Clear any remaining session data
-      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
-      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
-      
+      document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
+      document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
+
       // Redirect to auth page
       setTimeout(() => {
-        window.location.href = '/auth';
+        window.location.href = "/auth";
       }, 2000);
     } catch (error) {
-      console.error('Account deletion error:', error);
+      console.error("Account deletion error:", error);
       toast({
         title: "Błąd",
         description: error instanceof Error ? error.message : "Wystąpił błąd podczas usuwania konta",
@@ -171,24 +170,24 @@ export const ProfileCard: React.FC = () => {
     try {
       // Sign out with Supabase
       const { error } = await supabaseClient.auth.signOut();
-      
+
       if (error) {
         throw new Error(error.message);
       }
-      
+
       // Clear session cookies
-      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
-      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
-      
+      document.cookie = "sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
+      document.cookie = "sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
+
       toast({
         title: "Wylogowano",
         description: "Zostałeś pomyślnie wylogowany",
         variant: "success",
       });
-      
+
       // Redirect to auth page
       setTimeout(() => {
-        window.location.href = '/auth';
+        window.location.href = "/auth";
       }, 1000);
     } catch (error) {
       toast({
@@ -236,15 +235,11 @@ export const ProfileCard: React.FC = () => {
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src="" alt={`Avatar użytkownika ${userProfile.email}`} />
-              <AvatarFallback className="text-lg">
-                {getInitials(userProfile.email)}
-              </AvatarFallback>
+              <AvatarFallback className="text-lg">{getInitials(userProfile.email)}</AvatarFallback>
             </Avatar>
             <div>
               <CardTitle>Informacje o profilu</CardTitle>
-              <CardDescription>
-                Twoje dane konta i statystyki
-              </CardDescription>
+              <CardDescription>Twoje dane konta i statystyki</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -256,9 +251,7 @@ export const ProfileCard: React.FC = () => {
             </div>
             <div>
               <Label>Data rejestracji</Label>
-              <p className="text-sm font-medium mt-1">
-                {new Date(userProfile.created_at).toLocaleDateString("pl-PL")}
-              </p>
+              <p className="text-sm font-medium mt-1">{new Date(userProfile.created_at).toLocaleDateString("pl-PL")}</p>
             </div>
             <div>
               <Label>Liczba fiszek</Label>
@@ -276,9 +269,7 @@ export const ProfileCard: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Zmiana hasła</CardTitle>
-          <CardDescription>
-            Aktualizuj swoje hasło, aby zachować bezpieczeństwo konta
-          </CardDescription>
+          <CardDescription>Aktualizuj swoje hasło, aby zachować bezpieczeństwo konta</CardDescription>
         </CardHeader>
         <CardContent>
           {!isChangingPassword ? (
@@ -313,7 +304,7 @@ export const ProfileCard: React.FC = () => {
                 <Button onClick={handleChangePassword} disabled={isLoading} className="cursor-pointer">
                   Zapisz hasło
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     setIsChangingPassword(false);
                     setNewPassword("");
@@ -335,16 +326,14 @@ export const ProfileCard: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Akcje konta</CardTitle>
-          <CardDescription>
-            Zarządzaj swoim kontem lub wyloguj się
-          </CardDescription>
+          <CardDescription>Zarządzaj swoim kontem lub wyloguj się</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <Button onClick={handleLogout} variant="outline" disabled={isLoading} className="cursor-pointer">
               Wyloguj się
             </Button>
-            
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" disabled={isLoading} className="cursor-pointer">
@@ -355,13 +344,13 @@ export const ProfileCard: React.FC = () => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Usuń konto</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Czy na pewno chcesz usunąć swoje konto? Ta akcja jest nieodwracalna i 
-                    spowoduje trwałe usunięcie wszystkich Twoich danych, w tym fiszek i postępów w nauce.
+                    Czy na pewno chcesz usunąć swoje konto? Ta akcja jest nieodwracalna i spowoduje trwałe usunięcie
+                    wszystkich Twoich danych, w tym fiszek i postępów w nauce.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="cursor-pointer">Anuluj</AlertDialogCancel>
-                  <AlertDialogAction 
+                  <AlertDialogAction
                     onClick={handleDeleteAccount}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
                   >
@@ -371,11 +360,11 @@ export const ProfileCard: React.FC = () => {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-          
+
           <div className="pt-4 border-t">
             <p className="text-sm text-muted-foreground">
-              <strong>Uwaga:</strong> Usunięcie konta spowoduje trwałą utratę wszystkich danych. 
-              Ta operacja nie może być cofnięta.
+              <strong>Uwaga:</strong> Usunięcie konta spowoduje trwałą utratę wszystkich danych. Ta operacja nie może
+              być cofnięta.
             </p>
           </div>
         </CardContent>

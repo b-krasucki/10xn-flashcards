@@ -21,29 +21,29 @@ interface DashboardStats {
 
 export const GET: APIRoute = async ({ locals, request }) => {
   try {
-    console.log('Dashboard API called');
+    console.log("Dashboard API called");
     // Get Supabase client from middleware
     const supabase = locals.supabase;
     if (!supabase) {
-      console.error('Supabase client not available in dashboard API');
+      console.error("Supabase client not available in dashboard API");
       throw new Error("Supabase client not available");
     }
 
     // Get user from session
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
-      console.error('Dashboard API: User not authenticated', userError);
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { 
-          status: 401,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      console.error("Dashboard API: User not authenticated", userError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    console.log('Dashboard API: User authenticated', user.id);
+    console.log("Dashboard API: User authenticated", user.id);
 
     const userId = user.id;
 
@@ -107,10 +107,10 @@ export const GET: APIRoute = async ({ locals, request }) => {
     for (const generation of recentGenerationsData || []) {
       // Get actual flashcard count for this generation
       const { count: actualFlashcardCount, error: countError } = await supabase
-        .from('flashcards')
-        .select('*', { count: 'exact', head: true })
-        .eq('generation_id', generation.id)
-        .eq('user_id', userId);
+        .from("flashcards")
+        .select("*", { count: "exact", head: true })
+        .eq("generation_id", generation.id)
+        .eq("user_id", userId);
 
       if (countError) {
         // Silently handle count error, use 0 as fallback
@@ -118,26 +118,28 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
       // Get deck info from the first flashcard
       const { data: flashcardData, error: flashcardError } = await supabase
-        .from('flashcards')
-        .select(`
+        .from("flashcards")
+        .select(
+          `
           deck_name_id,
           flashcards_deck_names!deck_name_id(
             deck_name
           )
-        `)
-        .eq('generation_id', generation.id)
-        .eq('user_id', userId)
+        `
+        )
+        .eq("generation_id", generation.id)
+        .eq("user_id", userId)
         .limit(1)
         .single();
 
       const deck_name = flashcardData?.flashcards_deck_names?.deck_name || null;
       const deck_id = flashcardData?.deck_name_id || null;
-      
+
       recentGenerations.push({
         ...generation,
         generated_count: actualFlashcardCount || 0, // Use actual count instead of stored count
         deck_name,
-        deck_id
+        deck_id,
       });
     }
 
@@ -149,7 +151,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       recentGenerations: recentGenerations || [],
     };
 
-    console.log('Dashboard API: Returning stats', stats);
+    console.log("Dashboard API: Returning stats", stats);
 
     return new Response(JSON.stringify(stats), {
       status: 200,
@@ -158,8 +160,8 @@ export const GET: APIRoute = async ({ locals, request }) => {
       },
     });
   } catch (error) {
-    console.error('Dashboard API error:', error);
-    
+    console.error("Dashboard API error:", error);
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",

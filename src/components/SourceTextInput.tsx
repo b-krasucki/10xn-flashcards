@@ -24,7 +24,9 @@ export const SourceTextInput = ({ value, onChange, isInvalid = false }: SourceTe
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="sourceText" className="text-white">Materiał źródłowy</Label>
+      <Label htmlFor="sourceText" className="text-white">
+        Materiał źródłowy
+      </Label>
       <Textarea
         id="sourceText"
         placeholder="Wklej tutaj swoje materiały do nauki (min. 1000 znaków, maks. 10000 znaków)"

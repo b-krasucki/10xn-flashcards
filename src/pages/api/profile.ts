@@ -14,29 +14,29 @@ interface UserProfile {
  */
 export const GET: APIRoute = async ({ locals }) => {
   try {
-    console.log('Profile API called');
+    console.log("Profile API called");
     // Get Supabase client from middleware
     const supabase = locals.supabase;
     if (!supabase) {
-      console.error('Supabase client not available in profile API');
+      console.error("Supabase client not available in profile API");
       throw new Error("Supabase client not available");
     }
 
     // Get user from session
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
-      console.error('Profile API: User not authenticated', userError);
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { 
-          status: 401,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      console.error("Profile API: User not authenticated", userError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    console.log('Profile API: User authenticated', user.id);
+    console.log("Profile API: User authenticated", user.id);
 
     const userId = user.id;
 
@@ -55,10 +55,10 @@ export const GET: APIRoute = async ({ locals }) => {
       email: user.email || "Brak adresu e-mail",
       created_at: user.created_at || new Date().toISOString(),
       total_flashcards: totalFlashcards || 0,
-      total_generations: totalGenerations || 0
+      total_generations: totalGenerations || 0,
     };
 
-    console.log('Profile API: Returning profile', profile);
+    console.log("Profile API: Returning profile", profile);
 
     return new Response(JSON.stringify(profile), {
       status: 200,
@@ -66,10 +66,9 @@ export const GET: APIRoute = async ({ locals }) => {
         "Content-Type": "application/json",
       },
     });
-
   } catch (error) {
-    console.error('Profile API error:', error);
-    
+    console.error("Profile API error:", error);
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",

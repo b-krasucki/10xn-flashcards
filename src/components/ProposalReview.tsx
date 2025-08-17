@@ -48,7 +48,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
       source: "ai-edited",
     });
     setIsEditing(false);
-    
+
     toast({
       title: "Sukces",
       description: "Fiszka została edytowana",
@@ -66,9 +66,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
     <Card className="relative">
       <CardHeader>
         <CardTitle className="text-lg">Fiszka #{index + 1}</CardTitle>
-        <CardDescription>
-          Źródło: {proposal.source === "ai-full" ? "AI" : "AI (edytowane)"}
-        </CardDescription>
+        <CardDescription>Źródło: {proposal.source === "ai-full" ? "AI" : "AI (edytowane)"}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isEditing ? (
@@ -82,9 +80,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
                 placeholder="Pytanie lub termin"
                 maxLength={200}
               />
-              <p className="text-xs text-muted-foreground">
-                {editedFront.length}/200 znaków
-              </p>
+              <p className="text-xs text-muted-foreground">{editedFront.length}/200 znaków</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor={`back-${proposal.id}`}>Tył fiszki</Label>
@@ -96,9 +92,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
                 rows={4}
                 maxLength={500}
               />
-              <p className="text-xs text-muted-foreground">
-                {editedBack.length}/500 znaków
-              </p>
+              <p className="text-xs text-muted-foreground">{editedBack.length}/500 znaków</p>
             </div>
             <div className="flex space-x-2">
               <Button onClick={handleSaveEdit} size="sm">
@@ -123,12 +117,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
               <Button onClick={onAccept} size="sm" aria-label="Zaakceptuj fiszkę">
                 Zaakceptuj
               </Button>
-              <Button 
-                onClick={() => setIsEditing(true)} 
-                variant="outline" 
-                size="sm"
-                aria-label="Edytuj fiszkę"
-              >
+              <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" aria-label="Edytuj fiszkę">
                 Edytuj
               </Button>
               <AlertDialog>
@@ -146,9 +135,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                    <AlertDialogAction onClick={onReject}>
-                      Odrzuć
-                    </AlertDialogAction>
+                    <AlertDialogAction onClick={onReject}>Odrzuć</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -174,22 +161,22 @@ export const ProposalReview: React.FC = () => {
         id: "1",
         front: "Co to jest React?",
         back: "React to biblioteka JavaScript do tworzenia interfejsów użytkownika, opracowana przez Facebook.",
-        source: "ai-full"
+        source: "ai-full",
       },
       {
-        id: "2", 
+        id: "2",
         front: "Co to jest JSX?",
         back: "JSX to rozszerzenie składni JavaScript, które pozwala pisać kod przypominający HTML w plikach JavaScript.",
-        source: "ai-full"
+        source: "ai-full",
       },
       {
         id: "3",
         front: "Co to są hooki w React?",
         back: "Hooki to funkcje pozwalające 'zaczepiać się' do stanu React i funkcjonalności cyklu życia z komponentów funkcyjnych.",
-        source: "ai-full"
-      }
+        source: "ai-full",
+      },
     ];
-    
+
     setProposals(mockProposals);
     setDeckName("Podstawy React - Generacja #42");
   }, []);
@@ -203,17 +190,11 @@ export const ProposalReview: React.FC = () => {
   };
 
   const handleEditProposal = (index: number, editedProposal: GenerationProposalItemDto) => {
-    setProposals(prev => 
-      prev.map((proposal, i) => 
-        i === index 
-          ? { ...proposal, ...editedProposal }
-          : proposal
-      )
-    );
+    setProposals((prev) => prev.map((proposal, i) => (i === index ? { ...proposal, ...editedProposal } : proposal)));
   };
 
   const handleRejectProposal = (index: number) => {
-    setProposals(prev => prev.filter((_, i) => i !== index));
+    setProposals((prev) => prev.filter((_, i) => i !== index));
     toast({
       title: "Sukces",
       description: "Fiszka została odrzucona",
@@ -234,16 +215,16 @@ export const ProposalReview: React.FC = () => {
     setIsSaving(true);
     try {
       // Mock API call - in real app this would save to backend
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       toast({
         title: "Sukces",
         description: `Zapisano ${proposals.length} fiszek do talii "${deckName}"`,
         variant: "success",
       });
-      
+
       // Redirect to flashcards page
-      window.location.href = '/flashcards';
+      window.location.href = "/flashcards";
     } catch (error) {
       toast({
         title: "Błąd",
@@ -260,14 +241,10 @@ export const ProposalReview: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Brak propozycji</CardTitle>
-          <CardDescription>
-            Nie ma propozycji fiszek do przeglądu. Wróć do generowania.
-          </CardDescription>
+          <CardDescription>Nie ma propozycji fiszek do przeglądu. Wróć do generowania.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => window.location.href = '/generate'}>
-            Wróć do generowania
-          </Button>
+          <Button onClick={() => (window.location.href = "/generate")}>Wróć do generowania</Button>
         </CardContent>
       </Card>
     );
@@ -288,23 +265,15 @@ export const ProposalReview: React.FC = () => {
             placeholder="Wprowadź nazwę talii"
             maxLength={100}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            {deckName.length}/100 znaków
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">{deckName.length}/100 znaków</p>
         </CardContent>
       </Card>
 
       {/* Proposals List */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">
-            Propozycje fiszek ({proposals.length})
-          </h2>
-          <Button 
-            onClick={handleSaveAll}
-            disabled={!deckName.trim() || proposals.length === 0 || isSaving}
-            size="lg"
-          >
+          <h2 className="text-xl font-semibold">Propozycje fiszek ({proposals.length})</h2>
+          <Button onClick={handleSaveAll} disabled={!deckName.trim() || proposals.length === 0 || isSaving} size="lg">
             {isSaving ? "Zapisywanie..." : `Zapisz wszystkie (${proposals.length})`}
           </Button>
         </div>

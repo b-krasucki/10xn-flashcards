@@ -135,7 +135,8 @@
 
 /* Apply glassmorphism effect to all cards by default */
 @layer components {
-  [class*="bg-card"], .bg-card {
+  [class*="bg-card"],
+  .bg-card {
     backdrop-filter: blur(15px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
@@ -157,7 +158,8 @@
   transform: rotateY(180deg);
 }
 
-.flip-card-front, .flip-card-back {
+.flip-card-front,
+.flip-card-back {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -217,12 +219,7 @@
 }
 
 .shimmer-effect {
-  background: linear-gradient(
-    90deg,
-    transparent 25%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 75%
-  );
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.3) 50%, transparent 75%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -233,18 +230,13 @@
 }
 
 .shimmer-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 25%,
-    rgba(255, 255, 255, 0.2) 50%,
-    transparent 75%
-  );
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.2) 50%, transparent 75%);
   background-size: 200% 100%;
   animation: shimmer 6s infinite;
   z-index: 1;

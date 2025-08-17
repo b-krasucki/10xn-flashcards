@@ -5,6 +5,7 @@ This document provides comprehensive guidance on testing in the 10xn-flashcards 
 ## Overview
 
 Our testing strategy includes:
+
 - **Unit Tests**: Component and service testing with Vitest
 - **E2E Tests**: Full application flow testing with Playwright
 - **API Mocking**: MSW for unit tests, Playwright routing for E2E
@@ -12,12 +13,14 @@ Our testing strategy includes:
 ## Tech Stack
 
 ### Unit Testing
+
 - **Vitest**: Fast test runner with native TypeScript support
 - **React Testing Library**: Component testing with user-centric approach
 - **MSW (Mock Service Worker)**: API mocking for tests
 - **jsdom**: DOM simulation environment
 
 ### E2E Testing
+
 - **Playwright**: Cross-browser automation testing
 - **Chromium**: Primary browser for testing (configured for desktop)
 
@@ -91,7 +94,7 @@ describe('Button Component', () => {
   it('calls onClick handler when clicked', () => {
     const handleClick = vi.fn()
     render(<Button onClick={handleClick}>Click me</Button>)
-    
+
     fireEvent.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledOnce()
   })
@@ -101,28 +104,28 @@ describe('Button Component', () => {
 ### Service Testing
 
 ```typescript
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createMockFlashcard } from '@/test/utils/mock-data'
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { createMockFlashcard } from "@/test/utils/mock-data";
 
 // Mock dependencies
-vi.mock('@/db/supabase.client', () => ({
+vi.mock("@/db/supabase.client", () => ({
   supabase: {
     from: vi.fn(() => ({
-      select: vi.fn(() => ({ data: [], error: null }))
-    }))
-  }
-}))
+      select: vi.fn(() => ({ data: [], error: null })),
+    })),
+  },
+}));
 
-describe('Flashcards Service', () => {
+describe("Flashcards Service", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('should fetch flashcards', async () => {
-    const mockData = [createMockFlashcard()]
+  it("should fetch flashcards", async () => {
+    const mockData = [createMockFlashcard()];
     // Test implementation
-  })
-})
+  });
+});
 ```
 
 ## Writing E2E Tests
@@ -131,25 +134,25 @@ describe('Flashcards Service', () => {
 
 ```typescript
 // tests/e2e/page-objects/DashboardPage.ts
-import { Page, Locator } from '@playwright/test'
+import { Page, Locator } from "@playwright/test";
 
 export class DashboardPage {
-  readonly page: Page
-  readonly createDeckButton: Locator
+  readonly page: Page;
+  readonly createDeckButton: Locator;
 
   constructor(page: Page) {
-    this.page = page
-    this.createDeckButton = page.getByRole('button', { name: 'Create New Deck' })
+    this.page = page;
+    this.createDeckButton = page.getByRole("button", { name: "Create New Deck" });
   }
 
   async goto() {
-    await this.page.goto('/')
+    await this.page.goto("/");
   }
 
   async createDeck(name: string) {
-    await this.createDeckButton.click()
-    await this.page.getByLabel('Deck Name').fill(name)
-    await this.page.getByRole('button', { name: 'Create' }).click()
+    await this.createDeckButton.click();
+    await this.page.getByLabel("Deck Name").fill(name);
+    await this.page.getByRole("button", { name: "Create" }).click();
   }
 }
 ```
@@ -157,27 +160,28 @@ export class DashboardPage {
 ### Test Implementation
 
 ```typescript
-import { test, expect } from '@playwright/test'
-import { DashboardPage } from './page-objects/DashboardPage'
+import { test, expect } from "@playwright/test";
+import { DashboardPage } from "./page-objects/DashboardPage";
 
-test.describe('Dashboard', () => {
-  let dashboardPage: DashboardPage
+test.describe("Dashboard", () => {
+  let dashboardPage: DashboardPage;
 
   test.beforeEach(async ({ page }) => {
-    dashboardPage = new DashboardPage(page)
-    await dashboardPage.goto()
-  })
+    dashboardPage = new DashboardPage(page);
+    await dashboardPage.goto();
+  });
 
-  test('should create a new deck', async ({ page }) => {
-    await dashboardPage.createDeck('Test Deck')
-    await expect(page.getByText('Test Deck')).toBeVisible()
-  })
-})
+  test("should create a new deck", async ({ page }) => {
+    await dashboardPage.createDeck("Test Deck");
+    await expect(page.getByText("Test Deck")).toBeVisible();
+  });
+});
 ```
 
 ## Testing Best Practices
 
 ### Unit Tests
+
 1. **Test Behavior, Not Implementation**: Focus on what the component does, not how it does it
 2. **Use Descriptive Test Names**: Make test names clear and specific
 3. **Mock External Dependencies**: Use vi.mock() for external services
@@ -185,6 +189,7 @@ test.describe('Dashboard', () => {
 5. **Keep Tests Isolated**: Each test should be independent
 
 ### E2E Tests
+
 1. **Use Page Object Model**: Encapsulate page interactions in classes
 2. **Test Critical User Flows**: Focus on essential application paths
 3. **Use Data Attributes**: Add `data-testid` attributes for reliable selectors
@@ -192,6 +197,7 @@ test.describe('Dashboard', () => {
 5. **Visual Regression Testing**: Use screenshots for UI consistency
 
 ### General Guidelines
+
 1. **Arrange-Act-Assert Pattern**: Structure tests clearly
 2. **Use Factory Functions**: Create reusable test data with factories
 3. **Mock External Services**: Don't make real API calls in tests
@@ -201,12 +207,14 @@ test.describe('Dashboard', () => {
 ## Configuration
 
 ### Vitest Config (`vitest.config.ts`)
+
 - Environment: jsdom for DOM testing
 - Setup files for global test configuration
 - Coverage reporting with thresholds
 - Custom aliases for imports
 
 ### Playwright Config (`playwright.config.ts`)
+
 - Chromium browser only (per requirements)
 - Automatic dev server startup
 - Trace collection on retry
@@ -237,6 +245,7 @@ npm run test:coverage
 ## Continuous Integration
 
 The testing setup is designed to work with CI/CD pipelines:
+
 - Tests run in headless mode by default
 - Coverage reports are generated
 - Playwright tests include retry logic
@@ -245,6 +254,7 @@ The testing setup is designed to work with CI/CD pipelines:
 ## Performance Testing
 
 While not included in the initial setup, consider adding:
+
 - Lighthouse audits for performance metrics
 - k6 for load testing APIs
 - Bundle size analysis
@@ -252,6 +262,7 @@ While not included in the initial setup, consider adding:
 ## Security Testing
 
 Consider adding:
+
 - OWASP ZAP for security scanning
 - npm audit for dependency vulnerabilities
 - CSRF and XSS testing in E2E scenarios

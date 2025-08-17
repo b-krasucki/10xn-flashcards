@@ -44,7 +44,7 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
     "deck": {
       "id": "number",
       "deck_name": "string",
-      "user_id": "string" 
+      "user_id": "string"
     },
     "flashcards": [
       {
@@ -95,13 +95,13 @@ Tworzy jedno lub wiele propozycji fiszek (manualnych lub generowanych przez AI).
 
 ## 6. Obsługa błędów
 
-| Scenariusz                    | Kod | Akcja                                                 |
-| ----------------------------- | --- | ----------------------------------------------------- |
-| Błędna walidacja              | 400 | Zwróć szczegóły błędów Zod                            |
-| Brak sesji                    | 401 | Zwróć `{ error: 'Unauthorized' }`                     |
-| Inny `user_id` w DTO          | 403 | Zwróć `{ error: 'Forbidden' }`                        |
+| Scenariusz                    | Kod | Akcja                                                                |
+| ----------------------------- | --- | -------------------------------------------------------------------- |
+| Błędna walidacja              | 400 | Zwróć szczegóły błędów Zod                                           |
+| Brak sesji                    | 401 | Zwróć `{ error: 'Unauthorized' }`                                    |
+| Inny `user_id` w DTO          | 403 | Zwróć `{ error: 'Forbidden' }`                                       |
 | Nieistniejące `generation_id` | 404 | Zwróć `{ error: 'Generation not found for one or more flashcards' }` |
-| Błąd bazy danych / wyjątek    | 500 | Log error, zwróć `{ error: 'Internal Server Error' }` |
+| Błąd bazy danych / wyjątek    | 500 | Log error, zwróć `{ error: 'Internal Server Error' }`                |
 
 ## 7. Wydajność
 

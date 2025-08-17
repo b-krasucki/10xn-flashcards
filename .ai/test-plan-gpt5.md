@@ -1,7 +1,9 @@
 # Plan testów dla 10xn Flashcards (Astro + React + Supabase)
 
 ## 1. Wprowadzenie i cele testowania
+
 Celem testów jest zapewnienie jakości aplikacji webowej 10xn Flashcards, obejmującej:
+
 - poprawność kluczowych funkcjonalności (autoryzacja, generowanie fiszek, zarządzanie taliami, nauka SRS, profil),
 - stabilność i bezpieczeństwo warstwy API (Astro Pages API + Supabase),
 - zgodność interfejsu z wymaganiami UX/A11y oraz spójność komunikatów/obsługi błędów,
@@ -10,18 +12,22 @@ Celem testów jest zapewnienie jakości aplikacji webowej 10xn Flashcards, obejm
 Efektem będzie zminimalizowanie regresji, szybkie wykrywanie krytycznych defektów oraz przewidywalne wydania.
 
 ## 2. Zakres testów
+
 W zakres wchodzą:
+
 - Frontend (React/TypeScript) i routing (Astro),
-- API (Astro pages pod /api/*) współpracujące z Supabase (auth + DB),
+- API (Astro pages pod /api/\*) współpracujące z Supabase (auth + DB),
 - Integracje z OpenRouter (LLM) w warstwie serwerowej,
 - Algorytm powtórek rozłożonych w czasie (SM-2),
 - Walidacje danych (Zod) i procedury obsługi błędów/logowania.
 
 Poza zakresem:
+
 - Testy urządzeń mobilnych natywnych (aplikacja jest webowa),
 - Pen-testy pełnego zaplecza Supabase (wykonane jako sanity/security w granicach aplikacji).
 
 ## 3. Typy testów
+
 - Testy jednostkowe:
   - utils: spaced-repetition (SM-2), utils/toast, utils/cn,
   - services: LLMService (parsing “Front:/Back:”, ekstrakcja nazwy talii), FlashcardsService (mapowanie, walidacje, aktualizacje),
@@ -43,6 +49,7 @@ Poza zakresem:
 ## 4. Scenariusze testowe dla kluczowych funkcjonalności
 
 ### 4.1. Autoryzacja i sesje (AuthForm, middleware, UserMenu, ProfileCard, /auth)
+
 - Rejestracja nowego użytkownika:
   - poprawne walidacje (format e-mail, min 6 znaków, confirmPassword),
   - ścieżka z niepotwierdzonym e-mailem (toast, brak auto-logowania),
@@ -51,7 +58,7 @@ Poza zakresem:
   - poprawne zapisanie sb-access-token i sb-refresh-token (Secure, SameSite=Strict),
   - odświeżenie strony po zalogowaniu – sesja powinna istnieć.
 - Middleware:
-  - niezalogowany użytkownik -> redirect na /auth przy próbie wejścia na trasy: “/”, “/generate”, “/flashcards”, “/learn”, “/profile”, “/deck/*”.
+  - niezalogowany użytkownik -> redirect na /auth przy próbie wejścia na trasy: “/”, “/generate”, “/flashcards”, “/learn”, “/profile”, “/deck/\*”.
 - Wylogowanie (UserMenu, Profile):
   - wywołanie supabaseClient.auth.signOut(),
   - wyczyszczenie ciasteczek i redirect do /auth.
@@ -64,13 +71,16 @@ Poza zakresem:
   - wylogowanie i redirect.
 
 Testy negatywne:
+
 - Błędne hasło/e-mail, błąd sieci, błędny format JSON; zachowanie toasts/alerts.
 
 Bezpieczeństwo:
-- weryfikacja, że endpointy /api/* wymagają poprawnej sesji (uwaga: middleware omija /api; API musi samodzielnie odczytać sesję z cookies i ustawić supabase.auth.setSession – test weryfikuje, że aktualna implementacja nie powoduje 401 w zdrowej sesji; jeśli powoduje, test rejestruje defekt).
+
+- weryfikacja, że endpointy /api/\* wymagają poprawnej sesji (uwaga: middleware omija /api; API musi samodzielnie odczytać sesję z cookies i ustawić supabase.auth.setSession – test weryfikuje, że aktualna implementacja nie powoduje 401 w zdrowej sesji; jeśli powoduje, test rejestruje defekt).
 - sprawdzenie braku atrybutu HttpOnly w ciasteczkach (ryzyko, do zarejestrowania jako znane ograniczenie).
 
 ### 4.2. Generowanie fiszek (GenerateForm, ProposalList, /api/generations, /api/generateDeckName)
+
 - Walidacje treści źródłowej:
   - < 1000 znaków -> przycisk zablokowany i komunikaty,
   - > 10000 znaków -> błąd/walidacja UI.
@@ -90,9 +100,11 @@ Bezpieczeństwo:
   - zaktualizowanie tabeli generations (accepted_unedited_count, accepted_edited_count) – testy wykryją, czy wartości są poprawnie sumowane czy nadpisywane (ryzyko).
 
 Testy negatywne:
+
 - LLM zwraca format inny niż “Front:/Back:” -> poprawne odfiltrowanie/propozycje puste/obsługa błędu.
 
 ### 4.3. Zarządzanie taliami i fiszkami (DecksGrid, FlashcardsList, EditDeckNameDialog, CreateDeckDialog, /api/decks, /api/flashcards, /deck/[id])
+
 - Lista talii:
   - pobranie /api/decks; liczba fiszek per talia,
   - tworzenie nowej talii (POST /api/decks) z walidacją nazw,
@@ -107,12 +119,15 @@ Testy negatywne:
   - /flashcards?generation=:id – sprawdzenie, że zwraca fiszki właśnie z tej generacji.
 
 Testy negatywne:
+
 - błędy API (401, 500), walidacje długości (front/back), brak talii, pusta talia.
 
 Wydajność (N+1):
+
 - /api/decks wykonuje count per deck – pomiar czasu/ilości zapytań przy 50-200 taliach; rekomendacja optymalizacji (agregacje lub RPC).
 
 ### 4.4. Dashboard (Dashboard.tsx, /api/dashboard)
+
 - Zwracane statystyki:
   - totalFlashcards, generatedFlashcards (source=ai-full), editedFlashcards (ai-edited), manualFlashcards (manual),
   - recentGenerations: generated_count (rzeczywista liczba fiszek z tej generacji), poprawne deck_name i deck_id.
@@ -120,6 +135,7 @@ Wydajność (N+1):
 - Stany ładowania i błędów (Loader, Alert).
 
 ### 4.5. Nauka (Learn, DeckSelector, LearnSession, /api/learn)
+
 - Wybór talii (DeckSelector) – pokazuje tylko talie z co najmniej 1 fiszką,
 - GET /api/learn?deckId= – zwraca fiszki due (SM-2) lub fallback (nowe + najdawniej powtarzane),
 - FlipCard interakcje (klawiatura/klik),
@@ -127,19 +143,23 @@ Wydajność (N+1):
 - Zakończenie sesji, restart, powrót do wyboru talii.
 
 Testy algorytmu SM-2 (unit/integration):
+
 - granice difficulty 1-5, wyliczenie EF, interwałów (1, 6, EF^n), minimalny EF 1.3, daty przyszłe.
 
 ### 4.6. Profil (ProfileCard, /api/profile, /api/user)
+
 - /api/profile – poprawny e-mail, created_at, total_flashcards, total_generations,
 - /api/user – podstawowe dane do awatara,
 - UX: skeleton loading, toasty błędów.
 
 ### 4.7. Obsługa błędów i UX
+
 - Komponenty: ErrorMessage, OverlayLoader, toasty,
 - Spójność komunikatów (PL/EN), aria-live, role="alert",
 - Nieprzewidziane błędy (sieć, JSON parse) -> klarowne komunikaty i brak crashy UI.
 
 ### 4.8. Bezpieczeństwo
+
 - Wymaganie autoryzacji na wszystkich endpointach biznesowych:
   - pozytywne: zalogowany użytkownik z tokenami w cookies -> 200,
   - negatywne: brak/niepoprawne tokeny -> 401,
@@ -151,11 +171,13 @@ Testy algorytmu SM-2 (unit/integration):
 - Odpowiedzi API nie zwracają wrażliwych danych.
 
 ### 4.9. Dostępność (a11y)
+
 - Formularze (etykiety, aria-invalid, aria-describedby),
 - Kontrolki (przyciski, focus states),
 - Kontrast, czytelność, wsparcie dla klawiatury (flip card, dialogi, menu mobilne).
 
 ## 5. Środowisko testowe
+
 - Wersje:
   - Node LTS, Astro v5.x, React 19, TypeScript, Tailwind v4,
   - Supabase – osobny projekt TEST (środowisko deweloperskie), z seedem.
@@ -173,6 +195,7 @@ Testy algorytmu SM-2 (unit/integration):
   - Supabase – e2e z realnym testowym projektem; unit/integration z mockiem.
 
 ## 6. Narzędzia do testowania
+
 - Jednostkowe/integracyjne: Vitest, @testing-library/react (komponenty), Supertest/fetch + MSW/nock (API),
 - E2E: Playwright (desktop i mobile viewporty),
 - A11y: axe-core/Playwright-a11y,
@@ -181,6 +204,7 @@ Testy algorytmu SM-2 (unit/integration):
 - CI: GitHub Actions (uruchamianie unit/integration/E2E headless, artefakty raportów).
 
 ## 7. Harmonogram testów
+
 - Tydzień 1:
   - Przygotowanie środowiska testowego (Supabase TEST, seedy),
   - Testy jednostkowe utils, schematów Zod, LLM parsing,
@@ -198,6 +222,7 @@ Testy algorytmu SM-2 (unit/integration):
 Równoległość: unit/integration w CI przy każdym PR; E2E nightly i przy release.
 
 ## 8. Kryteria akceptacji testów
+
 - Testy jednostkowe: min. 80% pokrycia kluczowych modułów (spaced-repetition, LLM parsing, schemas, FlashcardsService),
 - Integracyjne API: 100% pokrycia kluczowych ścieżek (sukces/błąd/autoryzacja) dla wszystkich endpointów,
 - E2E: wszystkie krytyczne ścieżki “zielone” na Chrome/Firefox (desktop) + 1 viewport mobilny,
@@ -206,11 +231,13 @@ Równoległość: unit/integration w CI przy każdym PR; E2E nightly i przy rele
 - Bezpieczeństwo: brak wycieków kluczy, endpointy wymagają autoryzacji, ciasteczka mają Secure i SameSite=Strict; znane ograniczenie: brak HttpOnly – zaakceptowane lub zgłoszone z priorytetem.
 
 UWAGA – jednoznaczność wymogu dla “Save All” w ProposalList:
+
 - Kryterium akceptacji należy doprecyzować:
   - jeśli “Save All” ma pominąć “rejected”, test potwierdza odrzucenie zapisów rejected i zgłasza defekt w obecnej implementacji,
   - jeśli “Save All” ma zapisać wszystkie (łącznie z “rejected”), UI powinien to jasno komunikować; test weryfikuje spójność komunikatu/akcji.
 
 ## 9. Role i odpowiedzialności
+
 - QA Lead: planowanie testów, przegląd przypadków, akceptacja kryteriów, koordynacja raportowania,
 - QA Engineer: implementacja testów unit/integration/E2E, konfiguracja CI, raportowanie defektów,
 - Backend Dev: wsparcie w testach API, poprawki endpointów, analiza logów Supabase,
@@ -219,6 +246,7 @@ UWAGA – jednoznaczność wymogu dla “Save All” w ProposalList:
 - Product Owner: doprecyzowanie wymogów (m.in. “Save All”), akceptacja wyników testów.
 
 ## 10. Procedury raportowania błędów
+
 - Zgłaszanie w systemie zadań (Issue Tracker) z polami:
   - Tytuł, opis, kroki reprodukcji, oczekiwane vs. rzeczywiste, zrzuty ekranu/wideo, logi (konsola, sieć, odpowiedź API), wersja commit,
   - Środowisko (URL, przeglądarka, użytkownik testowy), dane testowe,
@@ -231,6 +259,7 @@ UWAGA – jednoznaczność wymogu dla “Save All” w ProposalList:
 ---
 
 ## Załącznik: lista przypadków testowych wysokiego priorytetu (skrót)
+
 - API autoryzacja:
   - [P1] Zalogowany user, /api/decks -> 200; niezalogowany -> 401,
   - [P1] Middleware nie dotyka /api – API musi samodzielnie czytać cookies i ustawić sesję (test wykrywa ewentualne 401).

@@ -18,7 +18,9 @@ export const CharCounter = ({ count, min, max }: CharCounterProps) => {
         {" "}
         znaków (wymagane: {min.toLocaleString()}-{max.toLocaleString()})
       </span>
-      {isUnderMin && <span className="text-amber-400 ml-2">Potrzebujesz jeszcze {(min - count).toLocaleString()} znaków</span>}
+      {isUnderMin && (
+        <span className="text-amber-400 ml-2">Potrzebujesz jeszcze {(min - count).toLocaleString()} znaków</span>
+      )}
       {isOverMax && <span className="text-red-400 ml-2">Usuń {(count - max).toLocaleString()} znaków</span>}
     </div>
   );

@@ -1,7 +1,12 @@
 import type { APIRoute } from "astro";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../db/database.types";
-import { calculateNextReview, difficultyToText, getCardsDueForReview, getRecommendedSessionSize } from "../../lib/utils/spaced-repetition";
+import {
+  calculateNextReview,
+  difficultyToText,
+  getCardsDueForReview,
+  getRecommendedSessionSize,
+} from "../../lib/utils/spaced-repetition";
 
 export const prerender = false;
 
@@ -40,26 +45,27 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
 
     // Get user from session
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { 
-          status: 401,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const userId = user.id;
 
     // Get flashcards for learning from the specific deck using spaced repetition algorithm
-    
+
     // Get all flashcards with spaced repetition data from the deck
     const { data: allFlashcards, error } = await supabase
       .from("flashcards")
-      .select(`
+      .select(
+        `
         id,
         front,
         back,
@@ -71,11 +77,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
         flashcards_deck_names!deck_name_id (
           deck_name
         )
-      `)
+      `
+      )
       .eq("user_id", userId)
       .eq("deck_name_id", deckId)
       .order("next_review_date", { ascending: true, nullsFirst: true }); // Priority to cards due for review
-    
 
     if (error) {
       console.error("Error fetching flashcards for learning:", error);
@@ -93,20 +99,21 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Use spaced repetition algorithm to filter cards due for review
     const cardsDue = getCardsDueForReview(allFlashcards);
-    
+
     // If no cards are due, include some new cards or cards that haven't been reviewed in a while
     let cardsToStudy = cardsDue;
     if (cardsToStudy.length === 0) {
       // Include cards that have never been reviewed (new cards)
-      const newCards = allFlashcards.filter(card => !card.last_reviewed_at);
-      const oldCards = allFlashcards.filter(card => card.last_reviewed_at)
+      const newCards = allFlashcards.filter((card) => !card.last_reviewed_at);
+      const oldCards = allFlashcards
+        .filter((card) => card.last_reviewed_at)
         .sort((a, b) => {
           // Sort by last reviewed date (oldest first)
           const dateA = new Date(a.last_reviewed_at!).getTime();
           const dateB = new Date(b.last_reviewed_at!).getTime();
           return dateA - dateB;
         });
-      
+
       cardsToStudy = [...newCards.slice(0, 10), ...oldCards.slice(0, 5)]; // Up to 15 cards
     } else {
       // Limit to recommended session size
@@ -125,7 +132,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
         difficulty_level: card.difficulty_level || 0,
       };
     });
-    
 
     return new Response(JSON.stringify(formattedFlashcards), {
       status: 200,
@@ -135,7 +141,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     });
   } catch (error) {
     console.error("Learn API error:", error);
-    
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",
@@ -178,16 +184,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Get user from session
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { 
-          status: 401,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const userId = user.id;
@@ -228,13 +234,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     };
 
     const spacedRepetitionResult = calculateNextReview(difficulty, reviewData);
-    
-    console.log('Spaced repetition calculation:', {
+
+    console.log("Spaced repetition calculation:", {
       flashcardId,
       difficulty,
       difficultyText: difficultyToText(difficulty),
       currentReviewData: reviewData,
-      result: spacedRepetitionResult
+      result: spacedRepetitionResult,
     });
 
     // Update the flashcard with new spaced repetition data
@@ -270,7 +276,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   } catch (error) {
     console.error("Learn API error:", error);
-    
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",

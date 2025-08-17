@@ -56,7 +56,7 @@
       "deck": {
         "id": "number",
         "deck_name": "string",
-        "user_id": "string" 
+        "user_id": "string"
       },
       "flashcards": [
         {

@@ -56,7 +56,6 @@ Tabela zarządzana przez Supabase Auth
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 
-
 ## 2. Relacje między tabelami
 
 - Jeden uzytkownik (users) ma wiele fiszek (flashcards).
@@ -64,7 +63,6 @@ Tabela zarządzana przez Supabase Auth
 - Jeden uzytkownik (users) ma wiele rekordow w tabeli generation_error_logs.
 - Jedna nazwa talii (deck_name) ma wiele fiszek (flashcards)
 - Kazda fiszka (flashcards) moze opcjonalnie odnosic sie do jednej generacji (generations) poprzez generation_id
- 
 
 ## 3. Indeksy
 

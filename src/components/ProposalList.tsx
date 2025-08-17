@@ -537,7 +537,13 @@ export const ProposalList = ({
             const isApproved = approvedIndices.has(index);
             const isRejected = rejectedIndices.has(index);
             const isEdited = proposal.source === "ai-edited";
-            const cardBgClass = isRejected ? "bg-red-900/20 border-red-400/30" : isApproved ? "bg-green-900/20 border-green-400/30" : isEdited ? "bg-blue-900/20 border-blue-400/30" : "gradient-card";
+            const cardBgClass = isRejected
+              ? "bg-red-900/20 border-red-400/30"
+              : isApproved
+                ? "bg-green-900/20 border-green-400/30"
+                : isEdited
+                  ? "bg-blue-900/20 border-blue-400/30"
+                  : "gradient-card";
 
             return (
               <Card key={index} className={cardBgClass}>

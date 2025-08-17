@@ -14,13 +14,13 @@ export const testUsers = {
   validUser: {
     email: "test@example.com",
     password: "testPassword123!",
-    id: "test-user-id"
+    id: "test-user-id",
   },
   adminUser: {
-    email: "admin@example.com", 
+    email: "admin@example.com",
     password: "adminPassword123!",
-    id: "admin-user-id"
-  }
+    id: "admin-user-id",
+  },
 };
 
 /**
@@ -31,25 +31,25 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
   await page.addInitScript(() => {
     // Override window navigation for middleware redirects
     const originalLocation = window.location;
-    
-    Object.defineProperty(window, 'location', {
+
+    Object.defineProperty(window, "location", {
       value: new Proxy(originalLocation, {
         set(target, property, value) {
           // Intercept redirects to /auth and ignore them
-          if (property === 'href' && value.includes('/auth')) {
-            console.log('Ignoring auth redirect during test');
+          if (property === "href" && value.includes("/auth")) {
+            console.log("Ignoring auth redirect during test");
             return true;
           }
           return Reflect.set(target, property, value);
-        }
-      })
+        },
+      }),
     });
   });
 
   // Mock wszystkie Supabase endpoints
   await page.route("**/auth/v1/**", async (route) => {
     const url = route.request().url();
-    
+
     if (url.includes("/user")) {
       await route.fulfill({
         status: 200,
@@ -61,8 +61,8 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
           role: "authenticated",
           email_confirmed_at: "2024-01-01T00:00:00.000Z",
           created_at: "2024-01-01T00:00:00.000Z",
-          updated_at: "2024-01-01T00:00:00.000Z"
-        })
+          updated_at: "2024-01-01T00:00:00.000Z",
+        }),
       });
     } else if (url.includes("/token")) {
       await route.fulfill({
@@ -75,9 +75,9 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
           token_type: "bearer",
           user: {
             id: user.id,
-            email: user.email
-          }
-        })
+            email: user.email,
+          },
+        }),
       });
     } else {
       await route.continue();
@@ -91,8 +91,8 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
       contentType: "application/json",
       body: JSON.stringify({
         id: user.id,
-        email: user.email
-      })
+        email: user.email,
+      }),
     });
   });
 
@@ -112,15 +112,16 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
             generated_count: 10,
             model: "gpt-4",
             deck_name: "Matematyka",
-            deck_id: 1
-          }
-        ]
-      })
+            deck_id: 1,
+          },
+        ],
+      }),
     });
   });
 
   // Set authentication cookies z prawidłowymi tokenami JWT
-  const mockAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMDAwMDAwMDAwLCJpYXQiOjE2MDAwMDAwMDAsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0IiwicmVmcmVzaF90b2tlbiI6InJlZnJlc2gtdG9rZW4iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsInN1YiI6InRlc3QtdXNlci1pZCIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSJ9.K8ZujNKzkdnhHGrV3gSSfcPNZKEhF4oXEQo8O8jf7g8";
+  const mockAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMDAwMDAwMDAwLCJpYXQiOjE2MDAwMDAwMDAsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0IiwicmVmcmVzaF90b2tlbiI6InJlZnJlc2gtdG9rZW4iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsInN1YiI6InRlc3QtdXNlci1pZCIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSJ9.K8ZujNKzkdnhHGrV3gSSfcPNZKEhF4oXEQo8O8jf7g8";
   const mockRefreshToken = "refresh-token-mock";
 
   await page.context().addCookies([
@@ -130,16 +131,16 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
       domain: "localhost",
       path: "/",
       httpOnly: false,
-      secure: false
+      secure: false,
     },
     {
-      name: "sb-refresh-token", 
+      name: "sb-refresh-token",
       value: encodeURIComponent(mockRefreshToken),
       domain: "localhost",
       path: "/",
       httpOnly: false,
-      secure: false
-    }
+      secure: false,
+    },
   ]);
 }
 
@@ -149,14 +150,14 @@ export async function mockAuthentication(page: Page, user: TestUser = testUsers.
 export async function loginTestUser(page: Page, user: TestUser = testUsers.validUser) {
   // Navigate to auth page
   await page.goto("/auth");
-  
+
   // Fill in credentials
   await page.getByLabel("Adres e-mail").fill(user.email);
   await page.getByLabel("Hasło").fill(user.password);
-  
+
   // Submit form
   await page.locator('button[type="submit"]').filter({ hasText: "Zaloguj się" }).click();
-  
+
   // Wait for redirect to dashboard
   await page.waitForURL("/", { timeout: 10000 });
 }
@@ -167,7 +168,7 @@ export async function loginTestUser(page: Page, user: TestUser = testUsers.valid
 export async function logoutUser(page: Page) {
   // Clear authentication cookies
   await page.context().clearCookies();
-  
+
   // Clear local storage (with error handling)
   try {
     await page.evaluate(() => {
@@ -186,7 +187,7 @@ export async function logoutUser(page: Page) {
 export async function isUserAuthenticated(page: Page): Promise<boolean> {
   await page.goto("/");
   await page.waitForTimeout(1000); // Wait for potential redirect
-  
+
   const currentUrl = page.url();
   return !currentUrl.includes("/auth");
 }

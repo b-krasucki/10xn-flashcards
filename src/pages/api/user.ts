@@ -12,43 +12,40 @@ interface UserBasicData {
  */
 export const GET: APIRoute = async ({ locals }) => {
   try {
-    console.log('User API called');
-    
+    console.log("User API called");
+
     // Get Supabase client from middleware
     const supabase = locals.supabase;
     if (!supabase) {
-      console.error('Supabase client not available in user API');
-      return new Response(
-        JSON.stringify({ error: "Supabase client not available" }),
-        { 
-          status: 500,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      console.error("Supabase client not available in user API");
+      return new Response(JSON.stringify({ error: "Supabase client not available" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Get user from session
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
-      console.log('User API: User not authenticated', userError);
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { 
-          status: 401,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      console.log("User API: User not authenticated", userError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    console.log('User API: User authenticated', user.id);
+    console.log("User API: User authenticated", user.id);
 
     const userData: UserBasicData = {
       email: user.email || "user@example.com",
-      id: user.id
+      id: user.id,
     };
 
-    console.log('User API: Returning user data', userData);
+    console.log("User API: Returning user data", userData);
 
     return new Response(JSON.stringify(userData), {
       status: 200,
@@ -56,10 +53,9 @@ export const GET: APIRoute = async ({ locals }) => {
         "Content-Type": "application/json",
       },
     });
-
   } catch (error) {
-    console.error('User API error:', error);
-    
+    console.error("User API error:", error);
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",

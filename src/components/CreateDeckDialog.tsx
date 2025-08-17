@@ -18,11 +18,7 @@ interface CreateDeckDialogProps {
   isLoading?: boolean;
 }
 
-export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({
-  children,
-  onSave,
-  isLoading = false,
-}) => {
+export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({ children, onSave, isLoading = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [deckName, setDeckName] = useState("");
   const [error, setError] = useState("");
@@ -37,7 +33,7 @@ export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({
 
   const handleSave = () => {
     const trimmedName = deckName.trim();
-    
+
     if (!trimmedName) {
       setError("Nazwa talii nie może być pusta");
       return;
@@ -67,15 +63,11 @@ export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Utwórz nową talię</DialogTitle>
-          <DialogDescription>
-            Wprowadź nazwę dla nowej talii fiszek. Kliknij utwórz, gdy skończysz.
-          </DialogDescription>
+          <DialogDescription>Wprowadź nazwę dla nowej talii fiszek. Kliknij utwórz, gdy skończysz.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -90,23 +82,14 @@ export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({
               autoFocus
               className={error ? "border-destructive" : ""}
             />
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
         </div>
         <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={() => setIsOpen(false)}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
             Anuluj
           </Button>
-          <Button 
-            onClick={handleSave}
-            disabled={isLoading || !deckName.trim()}
-          >
+          <Button onClick={handleSave} disabled={isLoading || !deckName.trim()}>
             {isLoading ? "Tworzenie..." : "Utwórz"}
           </Button>
         </DialogFooter>

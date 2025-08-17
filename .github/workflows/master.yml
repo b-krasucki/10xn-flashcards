@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 env:
-  NODE_VERSION: '22.14.0'
+  NODE_VERSION: "22.14.0"
 
 jobs:
   # Job 1: Code Quality & Security
@@ -18,12 +18,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Ensure consistent line endings
+          autocrlf: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
+
+      - name: Configure git for line endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
 
       - name: Install dependencies
         run: npm ci
@@ -31,8 +39,19 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Check code formatting
-        run: npx prettier --check .
+      - name: Auto-format code
+        run: npx prettier --write .
+
+      - name: Check if formatting changed files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Code formatting issues found. Please run 'npm run format' locally."
+            echo "Modified files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "✅ Code is properly formatted"
+          fi
 
       - name: Security audit
         run: npm audit --audit-level=moderate
@@ -46,17 +65,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Ensure consistent line endings
+          autocrlf: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests 
+      - name: Run unit tests
         run: npm run test
 
   # Job 3: E2E Tests
@@ -68,12 +90,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Ensure consistent line endings
+          autocrlf: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -101,12 +126,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Ensure consistent line endings
+          autocrlf: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -134,7 +162,7 @@ jobs:
           echo "Unit tests: ${{ needs.unit-tests.result }}"
           echo "E2E tests: ${{ needs.e2e-tests.result }}"
           echo "Build: ${{ needs.build.result }}"
-          
+
           if [[ "${{ needs.unit-tests.result }}" == "failure" || "${{ needs.e2e-tests.result }}" == "failure" || "${{ needs.build.result }}" == "failure" ]]; then
             echo "❌ One or more jobs failed"
             exit 1

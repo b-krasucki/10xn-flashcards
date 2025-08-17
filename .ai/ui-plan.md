@@ -19,6 +19,7 @@ Interfejs użytkownika składa się z następujących warstw:
 ## 2. Lista widoków
 
 ### 2.1 Widok autoryzacji
+
 - Ścieżka: `/auth`
 - Główny cel: umożliwić rejestrację i logowanie użytkownika.
 - Kluczowe informacje: formularz z polami e-mail i hasło, przycisk przełączania trybu (logowanie/rejestracja).
@@ -28,6 +29,7 @@ Interfejs użytkownika składa się z następujących warstw:
 - Bezpieczeństwo: ruch po HTTPS, obsługa błędów 400/401.
 
 ### 2.2 Dashboard
+
 - Ścieżka: `/`
 - Główny cel: szybki podgląd statystyk i akcja „Nowa generacja”.
 - Kluczowe informacje: liczba fiszek, liczba wygenerowanych/zaakceptowanych, ostatnie 3 generacje.
@@ -37,6 +39,7 @@ Interfejs użytkownika składa się z następujących warstw:
 - Bezpieczeństwo: tylko dla zalogowanych.
 
 ### 2.3 Formularz generowania fiszek
+
 - Ścieżka: `/generate`
 - Główny cel: wprowadzenie tekstu źródłowego i wywołanie API generowania.
 - Kluczowe informacje: pole tekstowe (1000–10000 znaków), licznik znaków, progress bar, przycisk „Generuj”.
@@ -46,6 +49,7 @@ Interfejs użytkownika składa się z następujących warstw:
 - Bezpieczeństwo: walidacja długości po stronie klienta.
 
 ### 2.4 Przegląd i zatwierdzanie propozycji
+
 - Ścieżka: `/generate/review`
 - Główny cel: przegląd wygenerowanych fiszek, akceptacja, edycja lub odrzucenie.
 - Kluczowe informacje: lista do 10 propozycji, infinite scroll z paginacją.
@@ -55,6 +59,7 @@ Interfejs użytkownika składa się z następujących warstw:
 - Bezpieczeństwo: CSRF zabezpieczenie, autoryzacja.
 
 ### 2.5 Lista moich fiszek
+
 - Ścieżka: `/flashcards`
 - Główny cel: przegląd, dodawanie ręczne, edycja i usuwanie fiszek.
 - Kluczowe informacje: zwirtualizowana lista fiszek, przycisk Dodaj nową, stan pustej listy.
@@ -64,6 +69,7 @@ Interfejs użytkownika składa się z następujących warstw:
 - Bezpieczeństwo: walidacja długości front/back, RLS (tylko własne).
 
 ### 2.6 Sesja nauki
+
 - Ścieżka: `/learn`
 - Główny cel: przeprowadzenie sesji powtórkowej (spaced repetition).
 - Kluczowe informacje: pojedyncza fiszka (przód), flip animation, ocena (Łatwo/Średnio/Trudno).
@@ -73,6 +79,7 @@ Interfejs użytkownika składa się z następujących warstw:
 - Bezpieczeństwo: ochrona ścieżki przed nieautoryzowanym dostepem.
 
 ### 2.7 Profil użytkownika
+
 - Ścieżka: `/profile`
 - Główny cel: wyświetlenie danych profilu, zmiana hasła, usunięcie konta, wylogowanie.
 - Kluczowe informacje: adres e-mail, data rejestracji, przycisk Usuń konto, Logout.
@@ -117,4 +124,4 @@ Interfejs użytkownika składa się z następujących warstw:
 - **AlertDialog**: dialog potwierdzający (usunięcie fiszki/konta).
 - **FlipCard**: komponent animacji flip dla sesji nauki.
 - **ThemeToggle**: przełącznik jasny/ciemny.
-- **StatisticsGrid**: siatka kart ze statystykami na Dashboardzie. 
+- **StatisticsGrid**: siatka kart ze statystykami na Dashboardzie.
