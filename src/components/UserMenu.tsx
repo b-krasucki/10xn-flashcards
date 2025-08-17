@@ -16,27 +16,24 @@ export const UserMenu: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        console.log("UserMenu: Fetching user data...");
-
         const response = await fetch("/api/user");
 
         if (!response.ok) {
           if (response.status === 401) {
             // User not authenticated - this is normal for UserMenu
-            console.log("UserMenu: User not authenticated");
+
             return;
           }
           throw new Error(`Failed to fetch user data: ${response.status}`);
         }
 
         const userData = await response.json();
-        console.log("UserMenu: User data received", userData);
 
         setUserData({
           email: userData.email || "user@example.com",
         });
-      } catch (error) {
-        console.error("UserMenu: Error fetching user data:", error);
+      } catch {
+        // Silent error handling for user data fetch
         // Silent error handling - UserMenu should gracefully handle auth errors
       } finally {
         setIsLoading(false);
@@ -72,7 +69,7 @@ export const UserMenu: React.FC = () => {
       setTimeout(() => {
         window.location.href = "/auth";
       }, 1000);
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas wylogowywania",

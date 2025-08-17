@@ -54,7 +54,7 @@ export const EditDeckNameDialog: React.FC<EditDeckNameDialogProps> = ({
     try {
       onSave(trimmedName);
       setIsOpen(false);
-    } catch (error) {
+    } catch {
       setError("Wystąpił błąd podczas zapisywania");
     }
   };
@@ -91,7 +91,6 @@ export const EditDeckNameDialog: React.FC<EditDeckNameDialogProps> = ({
               onKeyDown={handleKeyDown}
               placeholder="Wprowadź nazwę talii..."
               disabled={isLoading}
-              autoFocus
               className={error ? "border-destructive" : ""}
             />
             {error && <p className="text-sm text-destructive">{error}</p>}

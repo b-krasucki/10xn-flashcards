@@ -7,15 +7,8 @@ import { vi } from "vitest";
 /**
  * Create a mock function with TypeScript support
  */
-export function createMockFn<T extends (...args: any[]) => any>(): T {
-  return vi.fn() as T;
-}
-
-/**
- * Mock a module with automatic typing
- */
-export function mockModule<T>(modulePath: string, moduleFactory: () => T): T {
-  return vi.mock(modulePath, moduleFactory) as T;
+export function createMockFn<T extends (...args: unknown[]) => unknown>(): T {
+  return vi.fn() as unknown as T;
 }
 
 /**
@@ -67,10 +60,18 @@ export function mockFetch() {
  */
 export function mockConsole() {
   return {
-    log: vi.spyOn(console, "log").mockImplementation(() => {}),
-    error: vi.spyOn(console, "error").mockImplementation(() => {}),
-    warn: vi.spyOn(console, "warn").mockImplementation(() => {}),
-    info: vi.spyOn(console, "info").mockImplementation(() => {}),
+    log: vi.spyOn(console, "log").mockImplementation(() => {
+      /* no-op */
+    }),
+    error: vi.spyOn(console, "error").mockImplementation(() => {
+      /* no-op */
+    }),
+    warn: vi.spyOn(console, "warn").mockImplementation(() => {
+      /* no-op */
+    }),
+    info: vi.spyOn(console, "info").mockImplementation(() => {
+      /* no-op */
+    }),
   };
 }
 
@@ -93,13 +94,13 @@ export function mockComponent(name: string) {
 /**
  * Assert that a function was called with specific arguments
  */
-export function expectCalledWith<T extends (...args: any[]) => any>(mockFn: T, ...args: Parameters<T>) {
+export function expectCalledWith<T extends (...args: unknown[]) => unknown>(mockFn: T, ...args: Parameters<T>) {
   return expect(mockFn).toHaveBeenCalledWith(...args);
 }
 
 /**
  * Assert that a function was called a specific number of times
  */
-export function expectCalledTimes<T extends (...args: any[]) => any>(mockFn: T, times: number) {
+export function expectCalledTimes<T extends (...args: unknown[]) => unknown>(mockFn: T, times: number) {
   return expect(mockFn).toHaveBeenCalledTimes(times);
 }

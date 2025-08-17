@@ -2,8 +2,6 @@ import type { APIRoute } from "astro";
 import { createFlashcardsSchema } from "../../lib/schemas/flashcards.schema";
 import type { CreateFlashcardsCommandDto, ErrorResponseDto } from "../../types";
 import { FlashcardsService } from "../../lib/services/flashcards.service";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../db/database.types";
 
 export const prerender = false;
 
@@ -29,9 +27,6 @@ export const GET: APIRoute = async ({ url, locals }) => {
     }
 
     const userId = user.id;
-
-    // Initialize service
-    const flashcardsService = new FlashcardsService(supabase);
 
     // Get query parameters
     const generationId = url.searchParams.get("generation");

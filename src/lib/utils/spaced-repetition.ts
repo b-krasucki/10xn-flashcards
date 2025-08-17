@@ -35,7 +35,7 @@ export function calculateNextReview(difficulty: number, currentData: FlashcardRe
     throw new Error("Difficulty must be between 1 and 5");
   }
 
-  let { easeFactor, reviewCount } = currentData;
+  const { easeFactor, reviewCount } = currentData;
   const newReviewCount = reviewCount + 1;
 
   // SM-2 algorithm: Update ease factor based on difficulty

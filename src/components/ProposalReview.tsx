@@ -150,7 +150,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, index, onAccept, 
 export const ProposalReview: React.FC = () => {
   const [proposals, setProposals] = useState<(GenerationProposalItemDto & { id: string })[]>([]);
   const [deckName, setDeckName] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Mock data - in real app this would come from URL params or API
@@ -181,7 +181,7 @@ export const ProposalReview: React.FC = () => {
     setDeckName("Podstawy React - Generacja #42");
   }, []);
 
-  const handleAcceptProposal = (index: number) => {
+  const handleAcceptProposal = () => {
     toast({
       title: "Sukces",
       description: "Fiszka została zaakceptowana",
@@ -225,7 +225,7 @@ export const ProposalReview: React.FC = () => {
 
       // Redirect to flashcards page
       window.location.href = "/flashcards";
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas zapisywania fiszek",
@@ -284,7 +284,7 @@ export const ProposalReview: React.FC = () => {
               key={proposal.id}
               proposal={proposal}
               index={index}
-              onAccept={() => handleAcceptProposal(index)}
+              onAccept={() => handleAcceptProposal()}
               onEdit={(editedProposal) => handleEditProposal(index, editedProposal)}
               onReject={() => handleRejectProposal(index)}
             />

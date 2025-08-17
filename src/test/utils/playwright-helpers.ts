@@ -1,4 +1,5 @@
-import { Page, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 /**
  * Helper functions for Playwright E2E tests
@@ -50,7 +51,7 @@ export class TestHelpers {
   /**
    * Mock API response
    */
-  async mockApiResponse(url: string | RegExp, response: any) {
+  async mockApiResponse(url: string | RegExp, response: unknown) {
     await this.page.route(url, async (route) => {
       await route.fulfill({
         status: 200,

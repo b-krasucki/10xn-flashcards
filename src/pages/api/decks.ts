@@ -1,6 +1,4 @@
 import type { APIRoute } from "astro";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../db/database.types";
 
 export const prerender = false;
 
@@ -45,7 +43,7 @@ export const GET: APIRoute = async ({ locals }) => {
     // Get flashcard counts for each deck
     const transformedDecks = [];
     for (const deck of decks || []) {
-      const { count: flashcard_count, error: countError } = await supabase
+      const { count: flashcard_count } = await supabase
         .from("flashcards")
         .select("*", { count: "exact", head: true })
         .eq("deck_name_id", deck.id)

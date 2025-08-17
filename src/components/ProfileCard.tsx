@@ -189,7 +189,7 @@ export const ProfileCard: React.FC = () => {
       setTimeout(() => {
         window.location.href = "/auth";
       }, 1000);
-    } catch (error) {
+    } catch {
       toast({
         title: "Błąd",
         description: "Wystąpił błąd podczas wylogowywania",

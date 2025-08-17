@@ -1,6 +1,4 @@
 import type { APIRoute } from "astro";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../db/database.types";
 
 export const prerender = false;
 
@@ -19,7 +17,7 @@ interface DashboardStats {
   }[];
 }
 
-export const GET: APIRoute = async ({ locals, request }) => {
+export const GET: APIRoute = async ({ locals }) => {
   try {
     console.log("Dashboard API called");
     // Get Supabase client from middleware
@@ -117,7 +115,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       }
 
       // Get deck info from the first flashcard
-      const { data: flashcardData, error: flashcardError } = await supabase
+      const { data: flashcardData } = await supabase
         .from("flashcards")
         .select(
           `

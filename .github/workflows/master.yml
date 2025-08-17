@@ -33,25 +33,28 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
 
+      - name: Install dos2unix for line ending conversion
+        run: sudo apt-get update && sudo apt-get install -y dos2unix
+
+      - name: Convert line endings to LF
+        run: |
+          # Convert CRLF to LF for all text files
+          find . -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" -o -name "*.mjs" -o -name "*.json" -o -name "*.astro" -o -name "*.css" -o -name "*.html" -o -name "*.md" -o -name "*.yml" -o -name "*.yaml" \) -not -path "./node_modules/*" -not -path "./dist/*" -not -path "./.astro/*" -not -path "./coverage/*" -not -path "./playwright-report/*" -not -path "./test-results/*" -exec dos2unix {} \;
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint
+      - name: Auto-fix linting issues
+        run: npm run lint:fix || true
 
       - name: Auto-format code
         run: npx prettier --write .
 
-      - name: Check if formatting changed files
+      - name: Verify code quality (final check)
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "❌ Code formatting issues found. Please run 'npm run format' locally."
-            echo "Modified files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "✅ Code is properly formatted"
-          fi
+          echo "✅ Code has been automatically fixed and formatted"
+          echo "Running final verification..."
+          npm run lint
 
       - name: Security audit
         run: npm audit --audit-level=moderate

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createMockFlashcard, createMockDeck } from "@/test/utils/mock-data";
+import { createMockFlashcard } from "@/test/utils/mock-data";
 
 // Mock the Supabase client
 vi.mock("@/db/supabase.client", () => ({

@@ -42,7 +42,7 @@ export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({ children, on
     try {
       onSave(trimmedName);
       setIsOpen(false);
-    } catch (error) {
+    } catch {
       setError("Wystąpił błąd podczas tworzenia talii");
     }
   };
@@ -79,7 +79,6 @@ export const CreateDeckDialog: React.FC<CreateDeckDialogProps> = ({ children, on
               onKeyDown={handleKeyDown}
               placeholder="Wprowadź nazwę talii..."
               disabled={isLoading}
-              autoFocus
               className={error ? "border-destructive" : ""}
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
