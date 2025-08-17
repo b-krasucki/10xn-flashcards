@@ -115,6 +115,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: npm run playwright:install --with-deps chromium
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ env.PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Run E2E tests
         run: npm run test:e2e

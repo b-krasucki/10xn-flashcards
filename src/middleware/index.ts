@@ -2,9 +2,13 @@ import { defineMiddleware } from "astro:middleware";
 import type { Database } from "../db/database.types";
 import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+// Initialize Supabase client - support both import.meta.env (Astro/Vite) and process.env (Node.js/tests)
+const supabaseUrl =
+  (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SUPABASE_URL) || process.env.PUBLIC_SUPABASE_URL;
+
+const supabaseAnonKey =
+  (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SUPABASE_ANON_KEY) ||
+  process.env.PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing required environment variables (PUBLIC_SUPABASE_URL or PUBLIC_SUPABASE_ANON_KEY)");
