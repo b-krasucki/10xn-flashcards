@@ -28,14 +28,14 @@ import { MobileMenu } from "@/components/MobileMenu";
       >
         <div class="container flex h-14 items-center">
           <!-- Logo with enhanced styling -->
-          <a 
-            href="/" 
-            class="mr-8 flex items-center space-x-3 text-white group transition-all duration-200 hover:scale-105" 
+          <a
+            href="/"
+            class="mr-8 flex items-center space-x-3 text-white group transition-all duration-200 hover:scale-105"
             aria-label="Strona główna"
           >
-            <img 
-              src="/app-icon.png" 
-              alt="10xn Flashcards" 
+            <img
+              src="/app-icon.png"
+              alt="10xn Flashcards"
               class="h-8 w-8 rounded-lg shadow-lg shadow-purple-500/25 group-hover:shadow-purple-500/40 transition-all duration-200"
             />
             <div class="flex flex-col">
@@ -45,13 +45,13 @@ import { MobileMenu } from "@/components/MobileMenu";
               <span class="text-xs text-white/60 -mt-1">by xnHaZE</span>
             </div>
           </a>
-          
+
           <!-- Navigation component -->
           <Navigation currentPath={Astro.url.pathname} client:load />
           <div class="ml-auto flex items-center space-x-4">
             <!-- User Menu with Avatar and Logout -->
             <UserMenu client:load />
-            
+
             <!-- Mobile Menu -->
             <MobileMenu currentPath={Astro.url.pathname} client:load />
           </div>
@@ -62,10 +62,10 @@ import { MobileMenu } from "@/components/MobileMenu";
         <slot />
       </main>
 
-      <footer class="border-t py-6 md:py-0">
-        <div class="container flex h-14 items-center justify-between">
+      <footer class="w-full border-t py-6 md:py-0">
+        <div class="flex h-14 items-center justify-center">
           <p class="text-sm text-muted-foreground">
-            © 2024 10xn Flashcards. 
+            © 2025 10xn Flashcards.
             <a href="/privacy" class="hover:text-foreground transition-colors">Polityka prywatności</a>
           </p>
         </div>

@@ -16,17 +16,28 @@ export const UserMenu: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        console.log('UserMenu: Fetching user data...');
         
-        if (error || !user) {
-          return;
+        const response = await fetch('/api/user');
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            // User not authenticated - this is normal for UserMenu
+            console.log('UserMenu: User not authenticated');
+            return;
+          }
+          throw new Error(`Failed to fetch user data: ${response.status}`);
         }
-
+        
+        const userData = await response.json();
+        console.log('UserMenu: User data received', userData);
+        
         setUserData({
-          email: user.email || "user@example.com"
+          email: userData.email || "user@example.com"
         });
       } catch (error) {
-        // Silent error handling
+        console.error('UserMenu: Error fetching user data:', error);
+        // Silent error handling - UserMenu should gracefully handle auth errors
       } finally {
         setIsLoading(false);
       }

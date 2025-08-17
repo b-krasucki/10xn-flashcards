@@ -39,37 +39,26 @@ export const ProfileCard: React.FC = () => {
       try {
         setIsLoadingProfile(true);
         
-        // Get current user
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        
-        if (userError || !user) {
-          toast({
-            title: "Błąd",
-            description: "Nie można pobrać danych użytkownika",
-            variant: "destructive",
-          });
-          return;
-        }
+        console.log('ProfileCard: Fetching profile data...');
 
-        // Fetch user statistics
-        const response = await fetch('/api/dashboard');
+        // Fetch user profile data from API (includes user info and statistics)
+        const response = await fetch('/api/profile');
         if (!response.ok) {
-          throw new Error('Failed to fetch user stats');
+          const errorData = await response.text();
+          console.error('Profile API error:', response.status, errorData);
+          throw new Error(`Failed to fetch profile data: ${response.status} ${errorData}`);
         }
         
-        const dashboardData = await response.json();
+        const profileData = await response.json();
+        console.log('Profile data received:', profileData);
         
-        setUserProfile({
-          email: user.email || "Brak adresu e-mail",
-          created_at: user.created_at || new Date().toISOString(),
-          total_flashcards: dashboardData.totalFlashcards || 0,
-          total_generations: dashboardData.recentGenerations?.length || 0
-        });
+        setUserProfile(profileData);
         
       } catch (error) {
+        console.error('ProfileCard fetch error:', error);
         toast({
           title: "Błąd",
-          description: "Wystąpił błąd podczas pobierania profilu",
+          description: `Wystąpił błąd podczas pobierania profilu: ${error instanceof Error ? error.message : 'Unknown error'}`,
           variant: "destructive",
         });
       } finally {
