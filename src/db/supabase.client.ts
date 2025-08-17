@@ -2,8 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || "https://mock-project.supabase.co";
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "mock-anon-key-for-testing";
 
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
 export type SupabaseClient = typeof supabaseClient;

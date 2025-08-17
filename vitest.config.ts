@@ -35,7 +35,7 @@ export default defineConfig({
       },
     },
     ui: true,
-    watch: true,
+    watch: !process.env.CI,
   },
   resolve: {
     alias: {

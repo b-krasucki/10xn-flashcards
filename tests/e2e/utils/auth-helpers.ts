@@ -12,8 +12,8 @@ export interface TestUser {
 
 export const testUsers = {
   validUser: {
-    email: "test@example.com",
-    password: "testPassword123!",
+    email: process.env.E2E_TEST_USER_EMAIL || "jogi.b00b00@gmail.com",
+    password: process.env.E2E_TEST_USER_PASSWORD || "idesobie",
     id: "test-user-id",
   },
   adminUser: {
