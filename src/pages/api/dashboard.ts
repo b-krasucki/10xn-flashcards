@@ -57,12 +57,12 @@ export const GET: APIRoute = async ({ locals, request }) => {
       throw new Error("Failed to fetch total flashcards");
     }
 
-    // Get AI-generated flashcards count
+    // Get AI-generated flashcards count (only fully AI-generated, not edited)
     const { count: generatedFlashcards, error: generatedError } = await supabase
       .from("flashcards")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
-      .in("source", ["ai-full", "ai-edited"]);
+      .eq("source", "ai-full");
 
     if (generatedError) {
       throw new Error("Failed to fetch generated flashcards");

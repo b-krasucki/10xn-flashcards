@@ -212,8 +212,8 @@ export const LearnSession: React.FC<LearnSessionProps> = ({ deckId, deckName, on
     setSessionComplete(false);
   };
 
-  const handleBackToFlashcards = () => {
-    window.location.href = "/flashcards";
+  const handleBackToDeckSelection = () => {
+    onBack();
   };
 
   if (error) {
@@ -230,7 +230,7 @@ export const LearnSession: React.FC<LearnSessionProps> = ({ deckId, deckName, on
           <CardDescription>{error}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={onBack}>Wróć do wyboru talii</Button>
+          <Button onClick={handleBackToDeckSelection}>Wróć do wyboru talii</Button>
         </CardContent>
       </Card>
     );
@@ -268,7 +268,7 @@ export const LearnSession: React.FC<LearnSessionProps> = ({ deckId, deckName, on
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleBackToFlashcards}>Wróć do fiszek</Button>
+          <Button onClick={handleBackToDeckSelection}>Wróć do wyboru talii</Button>
         </CardContent>
       </Card>
     );
@@ -292,7 +292,7 @@ export const LearnSession: React.FC<LearnSessionProps> = ({ deckId, deckName, on
             <Button onClick={handleRestartSession} variant="outline">
               Powtórz sesję
             </Button>
-            <Button onClick={handleBackToFlashcards}>Wróć do fiszek</Button>
+            <Button onClick={handleBackToDeckSelection}>Wróć do wyboru talii</Button>
           </div>
         </CardContent>
       </Card>
