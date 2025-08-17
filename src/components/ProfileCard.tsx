@@ -137,23 +137,39 @@ export const ProfileCard: React.FC = () => {
   const handleDeleteAccount = async () => {
     setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call real API to delete account
+      const response = await fetch('/api/deleteAccount', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete account');
+      }
       
       toast({
         title: "Konto usunięte",
-        description: "Twoje konto zostało trwale usunięte",
+        description: "Twoje konto zostało trwale usunięte wraz ze wszystkimi danymi",
         variant: "success",
       });
       
-      // Redirect to home or auth page
+      // Clear any remaining session data
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
+      
+      // Redirect to auth page
       setTimeout(() => {
         window.location.href = '/auth';
       }, 2000);
     } catch (error) {
+      console.error('Account deletion error:', error);
       toast({
         title: "Błąd",
-        description: "Wystąpił błąd podczas usuwania konta",
+        description: error instanceof Error ? error.message : "Wystąpił błąd podczas usuwania konta",
         variant: "destructive",
       });
     } finally {
@@ -277,7 +293,7 @@ export const ProfileCard: React.FC = () => {
         </CardHeader>
         <CardContent>
           {!isChangingPassword ? (
-            <Button onClick={() => setIsChangingPassword(true)}>
+            <Button onClick={() => setIsChangingPassword(true)} className="cursor-pointer">
               Zmień hasło
             </Button>
           ) : (
@@ -305,7 +321,7 @@ export const ProfileCard: React.FC = () => {
                 />
               </div>
               <div className="flex space-x-2">
-                <Button onClick={handleChangePassword} disabled={isLoading}>
+                <Button onClick={handleChangePassword} disabled={isLoading} className="cursor-pointer">
                   Zapisz hasło
                 </Button>
                 <Button 
@@ -316,6 +332,7 @@ export const ProfileCard: React.FC = () => {
                   }}
                   variant="outline"
                   disabled={isLoading}
+                  className="cursor-pointer"
                 >
                   Anuluj
                 </Button>
@@ -335,13 +352,13 @@ export const ProfileCard: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-            <Button onClick={handleLogout} variant="outline" disabled={isLoading}>
+            <Button onClick={handleLogout} variant="outline" disabled={isLoading} className="cursor-pointer">
               Wyloguj się
             </Button>
             
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={isLoading}>
+                <Button variant="destructive" disabled={isLoading} className="cursor-pointer">
                   Usuń konto
                 </Button>
               </AlertDialogTrigger>
@@ -354,10 +371,10 @@ export const ProfileCard: React.FC = () => {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                  <AlertDialogCancel className="cursor-pointer">Anuluj</AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={handleDeleteAccount}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
                   >
                     Usuń trwale
                   </AlertDialogAction>

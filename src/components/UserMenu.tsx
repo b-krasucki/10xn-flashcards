@@ -92,7 +92,7 @@ export const UserMenu: React.FC = () => {
       {/* User Avatar with Profile Link */}
       <Button 
         variant="ghost" 
-        className="relative h-8 w-8 rounded-full p-0 hover:bg-white/10"
+        className="relative h-8 w-8 rounded-full p-0 hover:bg-white/10 cursor-pointer"
         onClick={handleProfileClick}
         title={`Profil użytkownika: ${userData.email}`}
       >
@@ -109,7 +109,7 @@ export const UserMenu: React.FC = () => {
         variant="ghost" 
         size="sm"
         onClick={handleLogout}
-        className="text-white hover:bg-white/10 hover:text-white"
+        className="text-white hover:bg-white/10 hover:text-white cursor-pointer"
         title="Wyloguj się"
       >
         <LogOut className="h-4 w-4 mr-1" />

@@ -39,7 +39,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ currentPath = '/' }) => 
       <button
         type="button"
         onClick={toggleMenu}
-        className="p-2 text-white hover:text-white/80 hover:bg-white/10 rounded-lg transition-all duration-200"
+        className="p-2 text-white hover:text-white/80 hover:bg-white/10 rounded-lg transition-all duration-200 cursor-pointer"
         aria-label={isOpen ? "Zamknij menu" : "Otwórz menu"}
         aria-expanded={isOpen}
       >
