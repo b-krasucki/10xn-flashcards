@@ -24,3 +24,14 @@ pnpm-debug.log*
 .idea/
 
 .tmp/
+
+# testing
+coverage/
+test-results/
+playwright-report/
+.nyc_output/
+
+# test artifacts
+/tests/screenshots/
+/tests/videos/
+/tests/traces/
