@@ -11,12 +11,14 @@ Przejdź do: **Settings** → **Secrets and variables** → **Actions** → **Ne
 ```
 PUBLIC_SUPABASE_URL
 ```
+
 - **Wartość**: URL do twojego projektu Supabase (np. `https://abcdefg.supabase.co`)
 - **Gdzie znaleźć**: Supabase Dashboard → Project Settings → API → Project URL
 
 ```
 PUBLIC_SUPABASE_ANON_KEY
 ```
+
 - **Wartość**: Anon key z twojego projektu Supabase
 - **Gdzie znaleźć**: Supabase Dashboard → Project Settings → API → Project API keys → anon key
 
@@ -25,12 +27,14 @@ PUBLIC_SUPABASE_ANON_KEY
 ```
 E2E_TEST_USER_EMAIL
 ```
+
 - **Wartość**: Email użytkownika testowego (np. `test@yourdomain.com`)
 - **Uwaga**: Ten użytkownik musi być zarejestrowany w twojej bazie Supabase
 
 ```
 E2E_TEST_USER_PASSWORD
 ```
+
 - **Wartość**: Hasło użytkownika testowego
 - **Uwaga**: Musi być silne hasło zgodne z polityką Supabase
 
@@ -55,7 +59,7 @@ Jeśli używasz głównej bazy:
 ## 📋 Checklist
 
 - [ ] `PUBLIC_SUPABASE_URL` dodany do GitHub Secrets
-- [ ] `PUBLIC_SUPABASE_ANON_KEY` dodany do GitHub Secrets  
+- [ ] `PUBLIC_SUPABASE_ANON_KEY` dodany do GitHub Secrets
 - [ ] `E2E_TEST_USER_EMAIL` dodany do GitHub Secrets
 - [ ] `E2E_TEST_USER_PASSWORD` dodany do GitHub Secrets
 - [ ] Użytkownik testowy zarejestrowany w bazie Supabase
@@ -79,14 +83,17 @@ Po dodaniu secrets, uruchom workflow GitHub Actions:
 ## 🐛 Troubleshooting
 
 ### Błąd: "Missing required Supabase environment variables"
+
 - Sprawdź czy wszystkie 4 secrets są dodane
 - Sprawdź pisownię nazw secrets
 
 ### Błąd: "Invalid login credentials"
+
 - Sprawdź czy użytkownik testowy istnieje w bazie
 - Sprawdź czy hasło jest poprawne
 - Sprawdź czy użytkownik ma potwierdzonego email
 
 ### Błąd: "fetch failed" / network errors
+
 - Sprawdź czy `PUBLIC_SUPABASE_URL` jest poprawny
 - Sprawdź czy projekt Supabase jest aktywny
