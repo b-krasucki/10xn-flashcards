@@ -14,7 +14,7 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
 
    - Użytkownik wkleja dowolny tekst (np. fragment podręcznika).
    - Aplikacja wysyła tekst do modelu LLM za pośrednictwem API.
-   - Model LLM proponuje zestaw fiszek (pytania i odpowiedzi).
+   - Model LLM proponuje zestaw fiszek (pytania i odpowiedzi) oraz tytul dla talii (deck name)
    - Fiszki są przedstawiane użytkownikowi w formie listy z możliwością akceptacji, edycji lub odrzucenia.
 
 2. Ręczne tworzenie i zarządzanie fiszkami:

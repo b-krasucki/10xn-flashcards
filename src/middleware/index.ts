@@ -1,18 +1,95 @@
 import { defineMiddleware } from "astro:middleware";
+import type { Database } from "../db/database.types";
+import { createClient } from "@supabase/supabase-js";
 
-import { supabaseClient } from "../db/supabase.client";
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-export const onRequest = defineMiddleware(async (context, next) => {
-  context.locals.supabase = supabaseClient;
-  // Retrieve session from Supabase auth
-  const {
-    data: { session },
-    error,
-  } = await supabaseClient.auth.getSession();
-  if (error) {
-    console.error("Error retrieving session in middleware:", error);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing required environment variables (PUBLIC_SUPABASE_URL or PUBLIC_SUPABASE_ANON_KEY)");
+}
+
+const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  },
+});
+
+// Protected routes that require authentication
+const protectedRoutes = [
+  '/',
+  '/generate',
+  '/flashcards',
+  '/learn',
+  '/profile',
+  '/deck'
+];
+
+// Public routes that don't require authentication
+const publicRoutes = [
+  '/auth',
+  '/privacy'
+];
+
+export const onRequest = defineMiddleware(async ({ locals, url, request, redirect }, next) => {
+  // Set the Supabase client in locals for use in API routes
+  locals.supabase = supabaseClient;
+  
+  const pathname = url.pathname;
+  
+  // Check if this is an API route - handle authentication there
+  if (pathname.startsWith('/api/')) {
+    return next();
   }
-  // @ts-expect-error: extend locals with session object
-  (context.locals as { session: typeof session }).session = session;
+  
+  // Check if this is a public route
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return next();
+  }
+  
+  // For protected routes, check authentication
+  if (protectedRoutes.some(route => pathname.startsWith(route))) {
+    try {
+      // Get session from cookies
+      const accessToken = request.headers.get('cookie')
+        ?.split(';')
+        .find(c => c.trim().startsWith('sb-access-token='))
+        ?.split('=')[1];
+      
+      const refreshToken = request.headers.get('cookie')
+        ?.split(';')
+        .find(c => c.trim().startsWith('sb-refresh-token='))
+        ?.split('=')[1];
+      
+      if (!accessToken && !refreshToken) {
+        return redirect('/auth');
+      }
+      
+      // Set session if tokens exist
+      if (accessToken && refreshToken) {
+        await supabaseClient.auth.setSession({
+          access_token: decodeURIComponent(accessToken),
+          refresh_token: decodeURIComponent(refreshToken)
+        });
+      }
+      
+      // Get current user
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
+      
+      if (error || !user) {
+        return redirect('/auth');
+      }
+      
+      // Store user in locals for use in pages
+      locals.user = user;
+      
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+      return redirect('/auth');
+    }
+  }
+  
   return next();
 });

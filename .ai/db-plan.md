@@ -48,12 +48,23 @@ Tabela zarządzana przez Supabase Auth
 - error_message: TEXT NOT NULL
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 
+### Tabela: flashcards_deck_names
+
+- id: BIGSERIAL PRIMARY KEY
+- user_id: UUID NOT NULL REFERENCES users(id)
+- deck_name: VARCHAR(100) NOT NULL
+- created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+- updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+
+
 ## 2. Relacje między tabelami
 
 - Jeden uzytkownik (users) ma wiele fiszek (flashcards).
 - Jeden uzytkownik (users) ma wiele rekordow w tabeli generations.
 - Jeden uzytkownik (users) ma wiele rekordow w tabeli generation_error_logs.
+- Jedna nazwa talii (deck_name) ma wiele fiszek (flashcards)
 - Kazda fiszka (flashcards) moze opcjonalnie odnosic sie do jednej generacji (generations) poprzez generation_id
+ 
 
 ## 3. Indeksy
 
@@ -61,6 +72,7 @@ Tabela zarządzana przez Supabase Auth
 - Indeks na kolumnie 'generation_id' w tabeli flashcards
 - Indeks na kolumnie 'user_id' w tabeli generations
 - Indeks na kolumnie 'user_id' w tabeli generation_error_logs
+- Indeks na kolumnie 'id' w tabeli flashcards_deck_names
 
 ## 4. Zasady PostgreSQL (RLS i triggery)
 

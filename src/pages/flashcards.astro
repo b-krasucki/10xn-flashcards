@@ -1,17 +1,20 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Flashcard from "../components/Flashcard.tsx";
+import MainLayout from "../layouts/MainLayout.astro";
+import { DecksGrid } from "../components/DecksGrid";
+
+export const prerender = false;
 ---
 
-<Layout title="Flashcards">
-  <div class="container mx-auto py-8">
-    <h1 class="text-3xl font-bold mb-6">Flashcards</h1>
-    <div class="max-w-md mx-auto">
-      <Flashcard
-        client:load
-        question="Czym jest JSX w React?"
-        answer="JSX (JavaScript XML) to rozszerzenie składni JavaScriptu, które pozwala pisać kod przypominający HTML w plikach JavaScript. Ułatwia tworzenie i wizualizację struktury interfejsu użytkownika."
-      />
+<MainLayout title="Moje talie">
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">Moje talie</h1>
+          <p class="text-muted-foreground">Przeglądaj, edytuj i zarządzaj swoimi taliami fiszek</p>
+        </div>
+      </div>
+      <DecksGrid client:only="react" />
     </div>
   </div>
-</Layout>
+</MainLayout>

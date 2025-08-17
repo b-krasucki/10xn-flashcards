@@ -41,26 +41,67 @@ export type AiFlashcardProposalDto = BaseFlashcardProposal & {
 export type FlashcardProposalDto = ManualFlashcardProposalDto | AiFlashcardProposalDto;
 
 /**
- * Command model for creating one or more flashcards (POST /flashcards).
+ * Query parameters for GET /flashcards endpoint.
+ */
+export interface GetFlashcardsQueryDto {
+  page?: number;
+  limit?: number;
+  source?: "ai-full" | "ai-edited" | "manual";
+  sort?: string; // Example: "created_at", "updated_at". Could be keyof Tables<'flashcards'> for stricter typing.
+}
+
+/**
+ * Represents a single flashcard item within the CreateFlashcardsCommandDto.
+ * Derived from `flashcards` table insert type, with a specific `source` type.
+ */
+export interface CreateFlashcardItemDto extends Pick<TablesInsert<"flashcards">, "front" | "back" | "generation_id"> {
+  source: "manual" | "ai-full" | "ai-edited";
+}
+
+/**
+ * Command model for POST /flashcards endpoint.
  */
 export interface CreateFlashcardsCommandDto {
-  flashcardsProposals: FlashcardProposalDto[];
+  deck_name: string; // Max 100 characters
+  flashcards: CreateFlashcardItemDto[];
 }
 
 /**
- * Response DTO for created flashcards (POST /flashcards).
+ * Response DTO for deck information.
+ * Derived from `flashcards_deck_names` table.
+ */
+export type DeckResponseDto = Pick<Tables<"flashcards_deck_names">, "id" | "deck_name" | "user_id">;
+
+/**
+ * Represents a flashcard in API responses.
+ * Derived from `flashcards` table, mapping `deck_name_id` to `deck_id`
+ * and narrowing the `source` type. `user_id` is omitted.
+ */
+export interface FlashcardResponseDto extends Omit<Tables<"flashcards">, "deck_name_id" | "source" | "user_id"> {
+  /** Mapped from `deck_name_id` in the database. */
+  deck_id: number | null;
+  source: "manual" | "ai-full" | "ai-edited";
+}
+
+/**
+ * Response DTO for POST /flashcards endpoint.
  */
 export interface CreateFlashcardsResponseDto {
-  flashcardsProposals: FlashcardDto[];
+  deck: DeckResponseDto;
+  flashcards: FlashcardResponseDto[];
 }
 
 /**
- * Command model for updating a flashcard (PUT/PATCH /flashcards/{id}).
+ * Command model for PUT/PATCH /flashcards/{id} endpoint.
+ * Allows partial updates to front, back, and a specific set of source values.
+ * Derived from `flashcards` table update type.
  */
-export type UpdateFlashcardCommandDto = Pick<TablesUpdate<"flashcards">, "front" | "back" | "source">;
+export interface UpdateFlashcardCommandDto extends Partial<Pick<TablesUpdate<"flashcards">, "front" | "back">> {
+  source?: "ai-edited" | "manual";
+}
 
 /**
- * Response DTO for deletion of a flashcard (DELETE /flashcards/{id}).
+ * Response DTO for DELETE /flashcards/{id} endpoint.
  */
 export interface DeleteFlashcardResponseDto {
   message: string;
@@ -69,54 +110,69 @@ export interface DeleteFlashcardResponseDto {
 /**
  * Command model for initiating a generation (POST /generations).
  */
-export type CreateGenerationCommandDto = Pick<TablesInsert<"generations">, "model"> & {
+export interface CreateGenerationCommandDto {
+  model: string; // Example: 'gpt-4'
   source_text: string;
-};
+}
 
 /**
- * DTO for each proposal returned by the generation endpoints.
+ * Represents a single AI-generated flashcard proposal.
  */
-export type GenerationProposalDto = Pick<TablesInsert<"flashcards">, "front" | "back"> & {
-  source: "ai-full";
-};
+export interface GenerationProposalItemDto {
+  front: string;
+  back: string;
+  source: "ai-full" | "ai-edited"; // Allow both ai-full and ai-edited sources
+}
 
 /**
- * Response DTO for generation initiation (POST /generations).
+ * Response DTO for POST /generations endpoint.
+ * Includes the ID and count of the generation, along with proposals.
  */
 export interface CreateGenerationResponseDto {
-  generation_id: Tables<"generations">["id"];
-  generated_count: Tables<"generations">["generated_count"];
-  proposals: GenerationProposalDto[];
+  /** Corresponds to `generations.id` */
+  generation_id: number;
+  /** Corresponds to `generations.generated_count` */
+  generated_count: number;
+  proposals: GenerationProposalItemDto[];
 }
 
 /**
- * Summary DTO for listing generations (GET /generations).
+ * Query parameters for GET /generations endpoint.
  */
-export type GenerationListItemDto = Pick<
-  Tables<"generations">,
-  | "id"
-  | "model"
-  | "generated_count"
-  | "generation_duration"
-  | "source_text_hash"
-  | "source_text_lenght"
-  | "created_at"
-  | "updated_at"
-  | "accepted_edited_count"
-  | "accepted_unedited_count"
->;
-
-/**
- * Detailed DTO for a single generation including its proposals (GET /generations/{id}).
- */
-export interface GenerationDetailDto extends GenerationListItemDto {
-  proposals: FlashcardDto[];
+export interface GetGenerationsQueryDto {
+  page?: number;
+  limit?: number;
+  // Add other potential sort/filter fields based on future needs
 }
 
 /**
- * DTO for generation error logs (GET /generation-error-logs).
+ * Represents a generation record in a list response (GET /generations).
+ * Derived directly from `generations` table.
  */
-export type GenerationErrorLogDto = Omit<Tables<"generation_error_logs">, "user_id">;
+export type GenerationListItemDto = Tables<"generations">;
+
+/**
+ * Represents detailed information for a single generation (GET /generations/{id}).
+ * Extends `generations` table type and includes associated flashcard proposals.
+ */
+export interface GenerationDetailDto extends Tables<"generations"> {
+  proposals: GenerationProposalItemDto[];
+}
+
+/**
+ * Query parameters for GET /generation-error-logs endpoint.
+ */
+export interface GetGenerationErrorLogsQueryDto {
+  page?: number;
+  limit?: number;
+  error_code?: string;
+}
+
+/**
+ * Represents a generation error log item in API responses.
+ * Derived directly from `generation_error_logs` table.
+ */
+export type GenerationErrorLogItemDto = Tables<"generation_error_logs">;
 
 /**
  * Generic DTO for pagination parameters.
