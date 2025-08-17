@@ -91,12 +91,12 @@ export const DELETE: APIRoute = async ({ locals }) => {
       (typeof import.meta !== "undefined" && import.meta.env?.SUPABASE_SERVICE_ROLE_KEY) ||
       process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseServiceKey) {
-      console.error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("Missing required environment variables: PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
       return new Response(
         JSON.stringify({
           error: "Server configuration error - cannot delete user account",
-          details: "Service role key not configured",
+          details: "Required environment variables not configured",
         }),
         { status: 500, headers: { "Content-Type": "application/json" } }
       );

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { testDecks } from "./fixtures/test-data";
-import { mockAuthentication, logoutUser, testUsers } from "./utils/auth-helpers";
+import { loginTestUser, logoutUser, testUsers } from "./utils/auth-helpers";
 
 test.describe("Zarządzanie taliami", () => {
   test.describe("Bez uwierzytelnienia", () => {
@@ -13,7 +13,7 @@ test.describe("Zarządzanie taliami", () => {
 
   test.describe("Z uwierzytelnionym użytkownikiem", () => {
     test.beforeEach(async ({ page }) => {
-      await mockAuthentication(page, testUsers.validUser);
+      await loginTestUser(page, testUsers.validUser);
 
       // Mock API endpoints dla talii
       await page.route("/api/decks", async (route) => {

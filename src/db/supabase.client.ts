@@ -4,14 +4,15 @@ import type { Database } from "./database.types";
 
 // Support both import.meta.env (Astro/Vite) and process.env (Node.js/tests)
 const supabaseUrl =
-  (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SUPABASE_URL) ||
-  process.env.PUBLIC_SUPABASE_URL ||
-  "https://mock-project.supabase.co";
+  (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SUPABASE_URL) || process.env.PUBLIC_SUPABASE_URL;
 
 const supabaseAnonKey =
   (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SUPABASE_ANON_KEY) ||
-  process.env.PUBLIC_SUPABASE_ANON_KEY ||
-  "mock-anon-key-for-testing";
+  process.env.PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing required Supabase environment variables: PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY");
+}
 
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
 export type SupabaseClient = typeof supabaseClient;

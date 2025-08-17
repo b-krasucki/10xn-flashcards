@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { DashboardPage } from "./page-objects/DashboardPage";
-import { mockAuthentication, logoutUser, testUsers } from "./utils/auth-helpers";
+import { loginTestUser, logoutUser, testUsers } from "./utils/auth-helpers";
 
 test.describe("Panel główny (Dashboard)", () => {
   let dashboardPage: DashboardPage;
@@ -48,7 +48,7 @@ test.describe("Panel główny (Dashboard)", () => {
   test.describe("Z uwierzytelnionym użytkownikiem", () => {
     test.beforeEach(async ({ page }) => {
       // Mock authentication dla każdego testu
-      await mockAuthentication(page, testUsers.validUser);
+      await loginTestUser(page, testUsers.validUser);
     });
 
     test("powinno wyświetlać tytuł i opis dashboardu", async ({ page }) => {

@@ -8,12 +8,12 @@ on:
 
 env:
   NODE_VERSION: "22.14.0"
-  # Mock Supabase values for CI/CD (not real credentials)
-  PUBLIC_SUPABASE_URL: "https://mock-project.supabase.co"
-  PUBLIC_SUPABASE_ANON_KEY: "mock-anon-key-for-ci-testing"
-  # E2E Test User Credentials (mock values for CI)
-  E2E_TEST_USER_EMAIL: "test-user@example.com"
-  E2E_TEST_USER_PASSWORD: "test-password-123"
+  # Real Supabase credentials from GitHub Secrets
+  PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+  PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+  # E2E Test User Credentials from GitHub Secrets
+  E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+  E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
 
 jobs:
   # Job 1: Code Quality & Security
