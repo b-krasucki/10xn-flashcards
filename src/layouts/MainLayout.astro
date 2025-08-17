@@ -47,13 +47,13 @@ import { MobileMenu } from "@/components/MobileMenu";
           </a>
           
           <!-- Navigation component -->
-          <Navigation client:load />
+          <Navigation currentPath={Astro.url.pathname} client:load />
           <div class="ml-auto flex items-center space-x-4">
             <!-- User Menu with Avatar and Logout -->
             <UserMenu client:load />
             
             <!-- Mobile Menu -->
-            <MobileMenu client:load />
+            <MobileMenu currentPath={Astro.url.pathname} client:load />
           </div>
         </div>
       </header>

@@ -13,6 +13,10 @@ interface NavigationItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+interface NavigationProps {
+  currentPath?: string;
+}
+
 const navigationItems: NavigationItem[] = [
   {
     href: "/",
@@ -41,9 +45,7 @@ const navigationItems: NavigationItem[] = [
   }
 ];
 
-export const Navigation: React.FC = () => {
-  // Get current path for active state
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+export const Navigation: React.FC<NavigationProps> = ({ currentPath = '/' }) => {
   
   return (
     <nav className="hidden md:flex items-center space-x-1">

@@ -281,7 +281,9 @@ export const DecksGrid: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-semibold">Twoje talie ({decks.length})</h2>
+          <h2 className="text-xl font-semibold">
+            Twoje talie <span className="text-[#d1b6d3]">({decks.length})</span>
+          </h2>
           <p className="text-muted-foreground text-sm">Zarządzaj swoimi taliami fiszek</p>
         </div>
       </div>

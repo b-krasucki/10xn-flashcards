@@ -40,7 +40,6 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
         const decksWithFlashcards = decksList.filter((deck: Deck) => deck.flashcard_count > 0);
         setDecks(decksWithFlashcards);
       } catch (err) {
-        console.error("Error fetching decks:", err);
         setError(err instanceof Error ? err.message : "Failed to load decks");
       } finally {
         setIsLoading(false);
@@ -108,7 +107,7 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-2">
-                  <Book className="h-5 w-5 text-primary" />
+                  <Book className="h-5 w-5" style={{ color: "#D1B6D3" }} />
                   <CardTitle className="text-lg leading-tight">{deck.deck_name}</CardTitle>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -117,7 +116,9 @@ export const DeckSelector: React.FC<DeckSelectorProps> = ({ onDeckSelected }) =>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-primary">{deck.flashcard_count}</p>
+                  <p className="text-2xl font-bold" style={{ color: "#D1B6D3" }}>
+                    {deck.flashcard_count}
+                  </p>
                   <p className="text-xs text-muted-foreground">{deck.flashcard_count === 1 ? "fiszka" : "fiszek"}</p>
                 </div>
                 <div className="text-right">

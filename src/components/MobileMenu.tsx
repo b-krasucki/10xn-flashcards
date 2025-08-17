@@ -15,6 +15,10 @@ interface NavigationItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+interface MobileMenuProps {
+  currentPath?: string;
+}
+
 const navigationItems: NavigationItem[] = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/generate", label: "Generowanie", icon: Sparkles },
@@ -23,11 +27,8 @@ const navigationItems: NavigationItem[] = [
   { href: "/profile", label: "Profil", icon: User }
 ];
 
-export const MobileMenu: React.FC = () => {
+export const MobileMenu: React.FC<MobileMenuProps> = ({ currentPath = '/' }) => {
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Get current path for active state
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);

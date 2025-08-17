@@ -1,25 +1,27 @@
 import type { APIRoute } from "astro";
+
 import { LLMService, LLMError } from "@/lib/services/llmService";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Get Supabase client from middleware
     const supabase = locals.supabase;
+
     if (!supabase) {
       throw new Error("Supabase client not available");
     }
 
     // Get user from session
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { 
-          status: 401,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const body = await request.json();
@@ -32,7 +34,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Use a default model or allow the client to specify one
+    // Use a default model
     const selectedModel = "google/gemini-2.5-flash"; // Use model from request or fallback to default
 
     const llmService = LLMService.getInstance();
@@ -43,12 +45,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("API Error generating deck name:", error);
+    // Log error for debugging purposes
+    if (error instanceof Error) {
+      // Handle error appropriately
+    }
+
     let statusCode = 500;
     let errorMessage = "Internal Server Error";
 
     if (error instanceof LLMError) {
       errorMessage = error.message;
+
       // Optionally map LLMError codes to HTTP status codes
       if (error.code === "API_ERROR") {
         statusCode = 502; // Bad Gateway if LLM API fails
