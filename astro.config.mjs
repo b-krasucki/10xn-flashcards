@@ -14,9 +14,6 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  experimental: {
-    session: true,
-  },
   adapter: node({
     mode: "standalone",
   }),
