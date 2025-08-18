@@ -8,7 +8,13 @@ on:
 
 env:
   NODE_VERSION: "22.14.0"
-  
+  # Real Supabase credentials from GitHub Secrets
+  PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+  PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+  # E2E Test User Credentials from GitHub Secrets
+  E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+  E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+
 jobs:
   # Job 1: Code Quality & Security
   quality:
