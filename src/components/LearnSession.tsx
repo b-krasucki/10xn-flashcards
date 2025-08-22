@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/utils/toast";
 import { ArrowLeft } from "lucide-react";
 
-interface FlashcardData {
+export interface FlashcardData {
   id: number;
   front: string;
   back: string;

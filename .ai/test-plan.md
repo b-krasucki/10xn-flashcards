@@ -160,7 +160,6 @@ TC008: Zakończenie sesji nauki
 #### Testy E2E
 
 - **Playwright** - automatyzacja testów w przeglądarkach
-- **Cypress** - alternatywa dla testów E2E
 
 #### Testy wydajnościowe
 
