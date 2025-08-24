@@ -1,0 +1,270 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  NODE_VERSION: "22.14.0"
+  # Real Supabase credentials from GitHub Secrets
+  PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+  PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+  # E2E Test User Credentials from GitHub Secrets
+  E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+  E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+
+jobs:
+  # Job 1: Code Quality & Security
+  quality:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Configure git for line endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Install dos2unix for line ending conversion
+        run: sudo apt-get update && sudo apt-get install -y dos2unix
+
+      - name: Convert line endings to LF
+        run: |
+          # Convert CRLF to LF for all text files
+          find . -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" -o -name "*.mjs" -o -name "*.json" -o -name "*.astro" -o -name "*.css" -o -name "*.html" -o -name "*.md" -o -name "*.yml" -o -name "*.yaml" \) -not -path "./node_modules/*" -not -path "./dist/*" -not -path "./.astro/*" -not -path "./coverage/*" -not -path "./playwright-report/*" -not -path "./test-results/*" -exec dos2unix {} \;
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Auto-fix linting issues
+        run: npm run lint:fix || true
+
+      - name: Auto-format code
+        run: npx prettier --write .
+
+      - name: Verify code quality (final check)
+        run: |
+          echo "✅ Code has been automatically fixed and formatted"
+          echo "Running final verification..."
+          npm run lint
+
+      - name: Security audit
+        run: npm audit --audit-level=moderate
+
+  # Job 2: Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:ci
+
+  # Job 3: E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    environment: integration
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npm run playwright:install --with-deps chromium
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ env.PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ env.PUBLIC_SUPABASE_ANON_KEY }}
+          E2E_TEST_USER_EMAIL: ${{ env.E2E_TEST_USER_EMAIL }}
+          E2E_TEST_USER_PASSWORD: ${{ env.E2E_TEST_USER_PASSWORD }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Job 4: Build Test
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ env.PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+          retention-days: 7
+
+  # Job 5: Deploy to Cloudflare Pages (Production)
+  deploy-production:
+    name: Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests, build]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    environment: production
+    
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ env.PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ env.OPENROUTER_API_KEY }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
+
+  # Job 6: Deploy Preview (Pull Requests)
+  deploy-preview:
+    name: Deploy Preview to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests, build]
+    if: github.event_name == 'pull_request'
+    environment: preview
+    
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for preview
+        run: npm run build
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ env.PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ env.OPENROUTER_API_KEY }}
+
+      - name: Deploy Preview to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
+
+  # Job 7: All Tests Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests, build]
+    if: always()
+
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "Unit tests: ${{ needs.unit-tests.result }}"
+          echo "E2E tests: ${{ needs.e2e-tests.result }}"
+          echo "Build: ${{ needs.build.result }}"
+
+          if [[ "${{ needs.unit-tests.result }}" == "failure" || "${{ needs.e2e-tests.result }}" == "failure" || "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ One or more jobs failed"
+            exit 1
+          else
+            echo "✅ All jobs completed successfully"
+          fi

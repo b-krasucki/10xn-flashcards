@@ -1,5 +1,31 @@
-name = "xnhaze-flashcards"
-compatibility_date = "2025-08-24"
+name = "10xn-flashcards"
+compatibility_date = "2025-01-20"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+main = "dist/_worker.js"
+
+[assets]
+directory = "./dist"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "7e2775f3d3344aada779ae8f262ea1e0"
+preview_id = "b757d9fcf13445f1bc171ee3db81dc60"
+
+[build]
+command = "npm run build"
 
 [observability.logs]
 enabled = true
+
+[env.production.vars]
+# Production environment variables will be set in Cloudflare Dashboard
+ENVIRONMENT = "production"
+
+[vars]
+PUBLIC_SUPABASE_URL = "https://qiglwntfakujodjgmvgy.supabase.co"
+PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpZ2x3bnRmYWt1am9kamdtdmd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NjE3MDUsImV4cCI6MjA3MTAzNzcwNX0.sXuJzEpxUhVSQomPbSt8VdMFnzG5ozQvab13M6prkKo"
+
+[env.preview.vars] 
+# Preview environment variables for staging deployments
+ENVIRONMENT = "preview"
