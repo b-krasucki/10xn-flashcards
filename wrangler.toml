@@ -1,0 +1,5 @@
+name = "xnhaze-flashcards"
+compatibility_date = "2025-08-24"
+
+[assets]
+directory = "./dist"
