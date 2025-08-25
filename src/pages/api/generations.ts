@@ -63,7 +63,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     source_text_lenght = source_text.length;
 
     // Generowanie fiszek przy użyciu LLM
-    const llmService = LLMService.getInstance();
+    // Try to get API key from Cloudflare runtime env if available
+    console.log("Locals keys:", Object.keys(locals || {}));
+    console.log("Runtime available:", !!(locals as { runtime?: unknown })?.runtime);
+    const runtimeApiKey = (locals as { runtime?: { env?: { OPENROUTER_API_KEY?: string } } })?.runtime?.env
+      ?.OPENROUTER_API_KEY;
+    console.log("Runtime API Key:", runtimeApiKey ? "Found" : "Not found");
+    const llmService = LLMService.getInstance(runtimeApiKey);
     const proposals = await llmService.generateFlashcards(model, source_text);
 
     // Generowanie nazwy talii

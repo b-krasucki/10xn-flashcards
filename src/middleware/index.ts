@@ -2,6 +2,11 @@ import { defineMiddleware } from "astro:middleware";
 import type { Database } from "../db/database.types";
 import { createClient } from "@supabase/supabase-js";
 
+// Load MessageChannel polyfill for Cloudflare Workers
+if (typeof globalThis !== 'undefined' && typeof globalThis.MessageChannel === 'undefined') {
+  await import("../polyfills/message-channel.js");
+}
+
 // Initialize Supabase client - support both import.meta.env (Astro/Vite) and process.env (Node.js/tests)
 const supabaseUrl =
   (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SUPABASE_URL) || process.env.PUBLIC_SUPABASE_URL;

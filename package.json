@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:cf": "CLOUDFLARE=1 wrangler dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

@@ -14,22 +14,28 @@ export class LLMService {
   private static instance: LLMService;
   private readonly apiKey: string;
 
-  private constructor() {
-    // Support both import.meta.env (Astro/Vite) and process.env (Node.js/Cloudflare Workers)
-    const apiKey = 
+  private constructor(apiKey?: string) {
+    // If apiKey is provided directly, use it (for Cloudflare Workers env)
+    if (apiKey) {
+      this.apiKey = apiKey;
+      return;
+    }
+
+    // Fallback: Support both import.meta.env (Astro/Vite) and process.env (Node.js/local)
+    const envApiKey = 
       (typeof import.meta !== "undefined" && import.meta.env?.OPENROUTER_API_KEY) || 
       process.env.OPENROUTER_API_KEY;
     
-    console.log("OpenRouter API Key:", apiKey ? "Key exists" : "Key is missing");
-    if (!apiKey) {
+    console.log("OpenRouter API Key:", envApiKey ? "Key exists" : "Key is missing");
+    if (!envApiKey) {
       throw new Error("OPENROUTER_API_KEY environment variable is not set");
     }
-    this.apiKey = apiKey;
+    this.apiKey = envApiKey;
   }
 
-  public static getInstance(): LLMService {
+  public static getInstance(apiKey?: string): LLMService {
     if (!LLMService.instance) {
-      LLMService.instance = new LLMService();
+      LLMService.instance = new LLMService(apiKey);
     }
     return LLMService.instance;
   }
