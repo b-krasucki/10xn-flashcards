@@ -98,6 +98,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
           description: "Wysłaliśmy link potwierdzający na Twój adres e-mail",
           variant: "success",
         });
+        // Switch to login mode after successful registration
+        setIsLogin(true);
         return;
       }
 
