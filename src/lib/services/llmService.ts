@@ -15,7 +15,11 @@ export class LLMService {
   private readonly apiKey: string;
 
   private constructor() {
-    const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    // Support both import.meta.env (Astro/Vite) and process.env (Node.js/Cloudflare Workers)
+    const apiKey = 
+      (typeof import.meta !== "undefined" && import.meta.env?.OPENROUTER_API_KEY) || 
+      process.env.OPENROUTER_API_KEY;
+    
     console.log("OpenRouter API Key:", apiKey ? "Key exists" : "Key is missing");
     if (!apiKey) {
       throw new Error("OPENROUTER_API_KEY environment variable is not set");

@@ -20,6 +20,7 @@ enabled = true
 [vars]
 PUBLIC_SUPABASE_URL = "https://qiglwntfakujodjgmvgy.supabase.co"
 PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpZ2x3bnRmYWt1am9kamdtdmd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NjE3MDUsImV4cCI6MjA3MTAzNzcwNX0.sXuJzEpxUhVSQomPbSt8VdMFnzG5ozQvab13M6prkKo"
+OPENROUTER_API_KEY=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
 
 [env.production.vars]
 # Production environment variables will be set in Cloudflare Dashboard
