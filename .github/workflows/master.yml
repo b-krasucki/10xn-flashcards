@@ -164,8 +164,10 @@ jobs:
   deploy-production:
     name: Deploy to Cloudflare Pages
     runs-on: ubuntu-latest
+    environment: production
     needs: [unit-tests, e2e-tests, build]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    
     
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
@@ -199,7 +201,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} --commit-dirty=true
+          command: pages deploy dist --project-name=xnhaze-flashcards --commit-dirty=true
 
   # Job 6: All Tests Summary
   test-summary:
