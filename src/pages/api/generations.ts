@@ -2,7 +2,6 @@ import type { APIRoute } from "astro";
 import { createGenerationSchema } from "../../lib/schemas/generation.schema";
 import { LLMService, LLMError } from "../../lib/services/llmService";
 import type { SupabaseClient } from "../../db/supabase.client";
-import crypto from "crypto";
 
 export const prerender = false;
 
@@ -55,8 +54,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     ({ model, source_text } = validationResult.data);
     const start = Date.now();
 
-    // Obliczanie metryki tekstu (używamy MD5)
-    source_text_hash = crypto.createHash("md5").update(source_text).digest("hex");
+    // Obliczanie metryki tekstu (używamy SHA-256 z Web Crypto API)
+    const encoder = new TextEncoder();
+    const data = encoder.encode(source_text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    source_text_hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
     source_text_lenght = source_text.length;
 
     // Generowanie fiszek przy użyciu LLM
